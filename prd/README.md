@@ -1,28 +1,37 @@
 # PRD do produto
 
-## Personas
+## Fluxo de documentação
 
-As personas deste diretório representam os principais perfis de uso identificados para o aplicativo de estatísticas do Campeonato Brasileiro Série A. Elas são rascunhos iniciais, derivados do escopo informado, e não representam pesquisa com usuários.
+1. **Personas e objetivos:** os candidatos a persona para a alocação de salas, professores e materiais estão registrados como rascunhos sujeitos a validação: [coordenação da alocação](personas/coordenacao-alocacao.md), [professor](personas/professor-candidato.md) e [gestão de salas e materiais](personas/gestao-salas-materiais-candidata.md). A participação dos papéis ainda não está confirmada. As personas antigas pertencem ao domínio de futebol e não devem ser presumidas como válidas para este produto.
+2. **Jornadas:** depois de definir personas e objetivos, serão construídas novas jornadas que cubram frontend e retaguarda em nível conceitual, sem definir tecnologias.
+3. **Validação das jornadas:** as jornadas precisam de validação e aprovação explícitas antes de derivar requisitos.
+4. **Requisitos:** somente depois da aprovação das jornadas serão derivados, em conjunto, requisitos funcionais (RFs) e não funcionais (NFRs).
+5. **Implementação:** nenhum código está autorizado antes da aprovação da documentação aplicável. Somente após essa aprovação será liberado o próximo passo de implementação.
 
-- [Administrador](personas/administrador.md): administra a aplicação e suas operações de dados.
-- [Torcedor](personas/torcedor.md): acompanha seu time, partidas e estatísticas.
-- [Investidor](personas/investidor.md): acompanha audiência por time e desempenho no campeonato.
+## Artefatos históricos fora do contexto vigente
+
+As personas, jornadas, requisitos e arquiteturas existentes foram produzidos para o domínio de estatísticas de futebol. Estão obsoletos e fora do contexto vigente deste produto. Os arquivos são preservados como registro histórico, mas não são fontes ativas nem autoridade para definir o novo produto. Não devem orientar requisitos, arquitetura ou implementação atuais.
+
+- Personas históricas de futebol (obsoletas): [Administrador](personas/administrador.md), [Torcedor](personas/torcedor.md) e [Investidor](personas/investidor.md).
+- Jornadas históricas de futebol (obsoletas): [Jornadas de uso](jornadas-de-uso.md) e [Jornada frontend](jornada-frontend.md).
+- Requisitos históricos de futebol (obsoletos): [Requisitos funcionais](requisitos-funcionais.md).
+- Arquiteturas históricas de futebol (obsoletas): [Arquitetura conceitual agnóstica](arquitetura-agnostica.md) e [Modelagem arquitetural](modelagem-arquitetural.md).
 
 ## Escopo conhecido
 
-- O aplicativo atende torcedores de times da Série A do Brasil.
-- O torcedor consulta confrontos, posição na competição, desempenho de jogadores e resultados recentes.
-- O investidor consulta acessos por time e desempenho dos times no campeonato.
-- O administrador tem responsabilidades administrativas e acesso relacionado ao banco de dados.
+- A aplicação deve organizar a alocação de salas, professores e materiais sem conflitos de horário.
+- A avaliação do projeto deve apresentar evidências objetivas de qualidade, segurança, rastreabilidade e desempenho.
 
 ## Decisões pendentes
 
-- O que conta como “acesso por time”: visualizações, usuários únicos, sessões ou outra métrica; e quais filtros de período estarão disponíveis.
-- Como o “score do jogador” é calculado, qual a fonte dos dados e quando é atualizado.
-- Qual edição e temporada da Série A será coberta e como serão tratados dados históricos.
-- Quais ações e permissões compõem o acesso administrativo e o acesso ao banco de dados.
-- Se haverá login, favoritos, notificações ou personalização por time; esses itens não são requisitos confirmados neste rascunho.
+- Se a pessoa coordenadora/responsável pela alocação é usuária do sistema e se os papéis de professor e responsável pela gestão de salas e materiais participam; validar os objetivos de cada papel.
+- Como validar e definir a semântica de “conflito de horário”, sem pressupor regras ou critérios de conflito.
+- Como disponibilidade e agendamento se aplicam ao contexto, sem presumir políticas ou comportamento.
+- Quais serão as jornadas de frontend e de retaguarda conceitual, a construir depois da definição de personas e objetivos.
+- Quais critérios e evidências serão usados para avaliar qualidade, segurança, rastreabilidade e desempenho.
+- Quais políticas de segurança, prioridades de alocação, métricas, limites ou benchmarks de desempenho serão aplicáveis; nenhum foi definido.
+- Quais tecnologias serão adotadas; nenhuma tecnologia foi definida neste documento.
 
 ## Premissas de leitura
 
-Os perfis descrevem objetivos e necessidades, não especificações técnicas nem decisões finais de autorização. Informações demográficas, comportamentos observados e métricas quantitativas não foram presumidos. Os detalhes devem ser validados com usuários e responsáveis pelo produto antes de orientar implementação.
+O escopo confirmado limita-se à capacidade de organizar a alocação de salas, professores e materiais sem conflitos de horário e à expectativa de apresentar evidências objetivas de qualidade, segurança, rastreabilidade e desempenho na avaliação. A validade e o significado de “conflito” ainda precisam ser definidos. Não foram presumidos personas, jornadas, prioridades, regras, políticas, métricas, limites, benchmarks ou tecnologias. As jornadas deverão ser validadas explicitamente; RFs e NFRs serão elaborados juntos somente depois dessa validação, e a implementação depende de autorização documental.
