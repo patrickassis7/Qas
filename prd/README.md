@@ -2,36 +2,35 @@
 
 ## Fluxo de documentação
 
-1. **Personas e objetivos:** os candidatos a persona para a alocação de salas, professores e materiais estão registrados como rascunhos sujeitos a validação: [coordenação da alocação](personas/coordenacao-alocacao.md), [professor](personas/professor-candidato.md) e [gestão de salas e materiais](personas/gestao-salas-materiais-candidata.md). A participação dos papéis ainda não está confirmada. As personas antigas pertencem ao domínio de futebol e não devem ser presumidas como válidas para este produto.
-2. **Jornadas:** depois de definir personas e objetivos, serão construídas novas jornadas que cubram frontend e retaguarda em nível conceitual, sem definir tecnologias.
-3. **Validação das jornadas:** as jornadas precisam de validação e aprovação explícitas antes de derivar requisitos.
-4. **Requisitos:** somente depois da aprovação das jornadas serão derivados, em conjunto, requisitos funcionais (RFs) e não funcionais (NFRs).
-5. **Implementação:** nenhum código está autorizado antes da aprovação da documentação aplicável. Somente após essa aprovação será liberado o próximo passo de implementação.
+1. **Personas:** [Solicitante](personas/solicitante.md), [Responsável](personas/responsavel.md) e [Administrador](personas/administrador.md), derivadas do enunciado.
+2. **Requisitos e regras:** [requisitos-funcionais.md](requisitos-funcionais.md) reúne RFs, regras de negócio (RN) e requisitos não funcionais (RNF).
+3. **Rastreabilidade:** [RTM.md](../RTM.md) liga requisito, risco, teste e evidência.
+4. **Jornadas e arquitetura:** a construir (semana 35: C4, utility tree, riscos e ADRs), sem presumir regras além das do enunciado.
+5. **Implementação:** acompanha as semanas do cronograma do [README](../README.md).
 
-## Artefatos históricos fora do contexto vigente
-
-As personas, jornadas, requisitos e arquiteturas existentes foram produzidos para o domínio de estatísticas de futebol. Estão obsoletos e fora do contexto vigente deste produto. Os arquivos são preservados como registro histórico, mas não são fontes ativas nem autoridade para definir o novo produto. Não devem orientar requisitos, arquitetura ou implementação atuais.
-
-- Personas históricas de futebol (obsoletas): [Administrador](personas/administrador.md), [Torcedor](personas/torcedor.md) e [Investidor](personas/investidor.md).
-- Jornadas históricas de futebol (obsoletas): [Jornadas de uso](jornadas-de-uso.md) e [Jornada frontend](jornada-frontend.md).
-- Requisitos históricos de futebol (obsoletos): [Requisitos funcionais](requisitos-funcionais.md).
-- Arquiteturas históricas de futebol (obsoletas): [Arquitetura conceitual agnóstica](arquitetura-agnostica.md) e [Modelagem arquitetural](modelagem-arquitetural.md).
+> Os artefatos antigos do domínio de futebol (Foot Fanatics) foram removidos deste repositório.
 
 ## Escopo conhecido
 
 - A aplicação deve organizar a alocação de salas, professores e materiais sem conflitos de horário.
 - A avaliação do projeto deve apresentar evidências objetivas de qualidade, segurança, rastreabilidade e desempenho.
+- Perfis definidos pelo enunciado do projeto: **Solicitante** (professor ou coordenador que consulta disponibilidade e cria, altera ou cancela reservas), **Responsável** (aprova solicitações especiais, valida a alocação de docentes e acompanha retiradas e devoluções) e **Administrador** (gerencia salas, professores, materiais, usuários, bloqueios e manutenção).
+- Regras críticas definidas: término posterior ao início; sem sobreposição de reservas do mesmo recurso (sala, material ou professor); uma única reserva aceita em solicitações simultâneas; recursos em manutenção não são reserváveis; somente responsáveis aprovam recursos restritos; reservas iniciadas não podem ser apagadas; toda mudança de estado gera auditoria.
+- Ciclo de vida da reserva: `SOLICITADA → APROVADA → EM_USO → CONCLUÍDA`, com estados alternativos rejeitada, cancelada e não compareceu.
+- Tecnologia definida pelo enunciado: Java 21 e Spring Boot 3.x.
+- Metas mensuráveis: 80% de cobertura de linhas, 70% de branches, 100% dos requisitos críticos na RTM e 0 bugs ou vulnerabilidades críticas.
+
+A lista completa de requisitos funcionais, a estratégia de qualidade e os entregáveis estão no [README da raiz](../README.md).
 
 ## Decisões pendentes
 
-- Se a pessoa coordenadora/responsável pela alocação é usuária do sistema e se os papéis de professor e responsável pela gestão de salas e materiais participam; validar os objetivos de cada papel.
-- Como validar e definir a semântica de “conflito de horário”, sem pressupor regras ou critérios de conflito.
-- Como disponibilidade e agendamento se aplicam ao contexto, sem presumir políticas ou comportamento.
-- Quais serão as jornadas de frontend e de retaguarda conceitual, a construir depois da definição de personas e objetivos.
-- Quais critérios e evidências serão usados para avaliar qualidade, segurança, rastreabilidade e desempenho.
-- Quais políticas de segurança, prioridades de alocação, métricas, limites ou benchmarks de desempenho serão aplicáveis; nenhum foi definido.
-- Quais tecnologias serão adotadas; nenhuma tecnologia foi definida neste documento.
+- Como detalhar as jornadas de frontend e de retaguarda a partir dos perfis acima, e validá-las explicitamente.
+- Quais recursos serão classificados como "restritos" (exigem aprovação do Responsável).
+- Granularidade e unidade de tempo das reservas (por exemplo, janelas mínimas e máximas).
+- Quais integrações externas ou notificações simuladas serão adotadas.
+- Quais limites de desempenho (tempo de resposta, vazão) serão metas do teste de carga com JMeter.
+- Quais políticas de segurança específicas (além de autorização por perfil e validação de entrada) serão aplicadas.
 
 ## Premissas de leitura
 
-O escopo confirmado limita-se à capacidade de organizar a alocação de salas, professores e materiais sem conflitos de horário e à expectativa de apresentar evidências objetivas de qualidade, segurança, rastreabilidade e desempenho na avaliação. A validade e o significado de “conflito” ainda precisam ser definidos. Não foram presumidos personas, jornadas, prioridades, regras, políticas, métricas, limites, benchmarks ou tecnologias. As jornadas deverão ser validadas explicitamente; RFs e NFRs serão elaborados juntos somente depois dessa validação, e a implementação depende de autorização documental.
+O enunciado do projeto é a fonte de verdade para escopo, perfis, regras críticas e metas. Os requisitos, as regras e a RTM atuais foram derivados diretamente dele; riscos e testes da RTM são propostas da equipe, sujeitas a revisão. As jornadas e a arquitetura ainda serão construídas e validadas. Nenhum artefato do domínio de futebol deve ser usado como referência.

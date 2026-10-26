@@ -1,38 +1,36 @@
 # Persona: Administrador
 
-**Perfil:** pessoa responsável pela administração operacional do aplicativo, com atribuições administrativas e acesso autorizado aos dados e ao banco de dados.
+**Perfil:** pessoa que mantém o cadastro e a disponibilidade dos recursos e dos usuários do sistema.
 
 ## Objetivos
 
-- Manter a aplicação e os dados necessários ao produto operacionais e consistentes.
-- Administrar as informações e configurações sob sua responsabilidade.
-- Investigar problemas que afetem a disponibilidade ou a qualidade dos dados.
+- Gerenciar salas, professores, materiais e usuários.
+- Criar bloqueios e períodos de manutenção.
+- Manter o cadastro correto para que a detecção de conflitos funcione.
 
 ## Necessidades
 
-- Uma visão clara do estado operacional e de eventuais falhas de atualização de dados.
-- Ferramentas administrativas adequadas às tarefas que lhe forem atribuídas.
-- Acesso ao banco de dados compatível com suas responsabilidades e com as regras de segurança do produto.
-- Contexto suficiente para identificar a origem e o impacto de alterações nos dados.
+- Cadastro e edição de recursos com validação de dados.
+- Bloqueio de um recurso em manutenção, impedindo novas reservas no período.
+- Gestão de usuários e perfis (Solicitante, Responsável, Administrador).
+- Consulta ao histórico auditável e aos relatórios de utilização.
 
 ## Dificuldades a evitar
 
-- Não conseguir distinguir falha da aplicação de falha ou atraso na fonte de dados.
-- Alterar dados sem visibilidade sobre o impacto da mudança.
-- Ter permissões insuficientes para tarefas legítimas ou permissões excessivas sem necessidade operacional.
+- Recurso em manutenção sendo reservado.
+- Permissões excessivas para quem não precisa delas.
+- Alterações de cadastro sem registro de quem as fez.
 
 ## Cenário de uso
 
-Uma atualização de estatísticas falha. O administrador verifica o estado da operação, identifica quais dados foram afetados e toma as ações administrativas permitidas para restaurar a consistência.
+Um projetor vai para manutenção. O administrador cria o bloqueio para o período e o sistema passa a recusar novas reservas dele nesse intervalo.
 
 ## Sinais de sucesso
 
-- Consegue identificar problemas operacionais e dados afetados sem investigação manual desnecessária.
-- Consegue executar suas tarefas autorizadas com clareza sobre o resultado das alterações.
-- Os dados exibidos no produto permanecem consistentes após ações administrativas.
+- Recursos bloqueados nunca são reservados.
+- Cadastros consistentes e rastreáveis.
+- Relatórios de utilização, carga horária e conflitos evitados disponíveis.
 
-## Pontos a validar
+## Origem
 
-- Quais funções administrativas são necessárias e quem pode executá-las.
-- Se o acesso ao banco de dados será direto ou mediado por ferramentas administrativas.
-- Quais operações exigem registro de auditoria, aprovação ou recuperação.
+Perfil **Administrador** do enunciado do projeto.
