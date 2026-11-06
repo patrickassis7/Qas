@@ -161,17 +161,26 @@ A técnica é demonstrada em aula no Foot Fanatics e aplicada, na mesma semana, 
 
 ## Como executar
 
-### Commit 01 — esqueleto local
+### Commit 01 — esqueleto local e Commit 02 — persistência
 
-Pré-requisitos: JDK 21. O Maven global não é necessário, pois o projeto possui Maven Wrapper. PostgreSQL e Docker ainda não são necessários: a persistência é ativada no Commit 02.
+Pré-requisitos: JDK 21, Docker e Docker Compose. O Maven global não é necessário, pois o projeto possui Maven Wrapper.
 
 No Windows PowerShell:
 
 ```powershell
 java -version
 .\mvnw.cmd clean verify
+Copy-Item .env.example .env
+# Preencha o .env com valores locais; ele é usado pelo Docker Compose.
+docker compose up -d postgres
+$env:SPRING_PROFILES_ACTIVE="local"
+$env:DB_URL="jdbc:postgresql://localhost:5432/organizacao_recursos"
+$env:DB_USERNAME="<usuario-local>"
+$env:DB_PASSWORD="<senha-local>"
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
+
+O perfil `local` deve ser ativado explicitamente, como no comando acima ou com `SPRING_PROFILES_ACTIVE=local`. O Maven não carrega automaticamente o arquivo `.env`; por isso, as variáveis `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` precisam estar definidas na sessão do PowerShell que inicia a aplicação. O `.env` nunca deve ser versionado.
 
 Com a aplicação em execução:
 
@@ -179,7 +188,7 @@ Com a aplicação em execução:
 - OpenAPI: `http://localhost:8080/v3/api-docs`
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
-O perfil `local` usa uma configuração temporária que exclui a inicialização de DataSource, JPA/Hibernate e Flyway. Essas exclusões devem ser removidas no Commit 02, junto com a configuração PostgreSQL e a primeira migration. Não há autenticação JWT no Commit 01.
+O Commit 02 ativa PostgreSQL, Flyway V1, identidade e auditoria base. Usuários fictícios são semeados apenas no perfil `local`; o perfil `test` usa PostgreSQL isolado via Testcontainers. Não há autenticação JWT no Commit 02.
 
 ## Documentação
 

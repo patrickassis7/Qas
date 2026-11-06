@@ -1,5 +1,6 @@
 package br.com.organizacaorecursos;
 
+import br.com.organizacaorecursos.integration.PostgresIntegrationTestSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,13 +14,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-class ApplicationSmokeTest {
+class ApplicationSmokeTest extends PostgresIntegrationTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void contextStartsWithoutDatabase() throws Exception {
+    void contextStartsWithPostgresTestcontainer() throws Exception {
         mockMvc.perform(get("/actuator/health"))
                 .andExpect(status().isOk());
     }

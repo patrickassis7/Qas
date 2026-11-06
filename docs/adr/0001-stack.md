@@ -1,8 +1,8 @@
 # ADR 0001: Stack e decisões do projeto
 
-- **Status:** Aceita para o esqueleto; D1-D8 pendentes de validação com o docente.
+- **Status:** Aceita para a base dos Commits 01 e 02; D1-D8 pendentes de validação com o docente.
 - **Data:** 2026-11-06
-- **Escopo:** Commit 01 - esqueleto e execução local.
+- **Escopo:** Commits 01 e 02 - esqueleto, execução local e persistência base.
 
 ## Contexto
 
@@ -16,7 +16,7 @@ O projeto acadêmico Organização de Recursos precisa de uma base Java 21 + Spr
 | D2 | Recurso comum é aprovado automaticamente, com auditoria. | Apenas registrada. A aprovação e a auditoria funcional entram nos commits posteriores. |
 | D3 | Material é unidade exclusiva, sem controle de estoque. | Apenas registrada para o modelo de recursos do Commit 05. |
 | D4 | Recurso restrito possui `responsible_id`; responsável e administrador podem aprovar conforme o escopo. | Apenas registrada para o modelo e fluxo de aprovação. |
-| D5 | Intervalo semiaberto `[início, fim)`, conflito quando `a < d AND c < b`, com UTC no banco. | Apenas registrada. A persistência UTC entra com o PostgreSQL no Commit 02 e a regra nos Commits 09-10. |
+| D5 | Intervalo semiaberto `[início, fim)`, conflito quando `a < d AND c < b`, com UTC no banco. | Apenas registrada. A persistência base já usa `TIMESTAMPTZ`/UTC no Commit 02; a regra entra nos Commits 09-10. |
 | D6 | Hash de senha com BCrypt. | Não implementada no Commit 01; fica para o Commit 03. |
 | D7 | Interface `NotificationPort` com adaptador HTTP simulado. | Não implementada no Commit 01; fica para os commits de notificação. |
 | D8 | Página estática HTML/CSS/JS responsiva servida pelo Spring Boot. | Não implementada no Commit 01; fica para o Commit 16. |
@@ -33,12 +33,10 @@ O projeto acadêmico Organização de Recursos precisa de uma base Java 21 + Spr
 
 O Commit 01 inclui o driver PostgreSQL, Flyway e JPA no `pom.xml`, mas exclui temporariamente `DataSourceAutoConfiguration`, `HibernateJpaAutoConfiguration`, `FlywayAutoConfiguration` e `UserDetailsServiceAutoConfiguration` nos perfis `local` e `test`. Isso permite que a aplicação e os testes passem sem PostgreSQL ou migrations e evita uma senha gerada pelo starter de Security enquanto não há identidade implementada.
 
-Essa configuração deve ser removida no Commit 02, quando deverão ser adicionados o PostgreSQL, `docker-compose.yml`, a migration V1 e os testes de integração com Testcontainers. As propriedades `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` já estão documentadas apenas como nomes no `.env.example`.
+As exclusões de persistência foram removidas no Commit 02. A exclusão temporária de `UserDetailsServiceAutoConfiguration` foi mantida, pois a cadeia de segurança continua permissiva e login/JWT pertencem ao Commit 03. A aplicação agora usa PostgreSQL, `docker-compose.yml`, a migration V1 e testes de integração com Testcontainers. As propriedades `DB_URL`, `DB_NAME`, `DB_PORT`, `DB_USERNAME` e `DB_PASSWORD` permanecem documentadas somente como nomes no `.env.example`; valores reais continuam fora do Git.
 
 ## Pendências
 
 1. Validar D1-D8 com o docente.
-2. Remover as exclusões temporárias de persistência no Commit 02.
-3. Adicionar schema e migrations Flyway no Commit 02.
-4. Implementar identidade, BCrypt, JWT e autorização no Commit 03.
-5. Adicionar CI, JaCoCo e SonarCloud no Commit 04.
+2. Implementar autenticação, JWT e autorização no Commit 03.
+3. Adicionar CI, JaCoCo e SonarCloud no Commit 04.
