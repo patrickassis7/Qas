@@ -161,7 +161,25 @@ A técnica é demonstrada em aula no Foot Fanatics e aplicada, na mesma semana, 
 
 ## Como executar
 
-> Seção a ser preenchida a partir da semana 37, quando a casca Maven e o pipeline estiverem disponíveis. Deve conter: pré-requisitos (JDK 21, Maven, Docker), comandos para compilar, executar a aplicação e rodar a suíte de testes, e como gerar os relatórios JaCoCo.
+### Commit 01 — esqueleto local
+
+Pré-requisitos: JDK 21. O Maven global não é necessário, pois o projeto possui Maven Wrapper. PostgreSQL e Docker ainda não são necessários: a persistência é ativada no Commit 02.
+
+No Windows PowerShell:
+
+```powershell
+java -version
+.\mvnw.cmd clean verify
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+Com a aplicação em execução:
+
+- Health: `http://localhost:8080/actuator/health`
+- OpenAPI: `http://localhost:8080/v3/api-docs`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+
+O perfil `local` usa uma configuração temporária que exclui a inicialização de DataSource, JPA/Hibernate e Flyway. Essas exclusões devem ser removidas no Commit 02, junto com a configuração PostgreSQL e a primeira migration. Não há autenticação JWT no Commit 01.
 
 ## Documentação
 
