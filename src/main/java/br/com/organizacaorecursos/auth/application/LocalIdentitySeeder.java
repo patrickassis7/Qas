@@ -10,6 +10,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.env.Environment;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,11 +28,14 @@ public class LocalIdentitySeeder implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final Environment environment;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public LocalIdentitySeeder(UserRepository userRepository, RoleRepository roleRepository) {
+    public LocalIdentitySeeder(UserRepository userRepository, RoleRepository roleRepository,
+                               Environment environment) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.environment = environment;
     }
 
     @Override
@@ -45,10 +49,12 @@ public class LocalIdentitySeeder implements CommandLineRunner {
             RoleEntity role = roleRepository.findByName(seedUser.role())
                     .orElseThrow(() -> new IllegalStateException("Papel de seed não encontrado: " + seedUser.role()));
 
+            String localPassword = environment.getProperty("LOCAL_SEED_PASSWORD");
             UserEntity user = new UserEntity(
                     seedUser.name(),
                     seedUser.email(),
-                    passwordEncoder.encode(UUID.randomUUID().toString()),
+                    passwordEncoder.encode(localPassword == null || localPassword.isBlank()
+                            ? UUID.randomUUID().toString() : localPassword),
                     true
             );
             user.addRole(role);

@@ -54,6 +54,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
@@ -69,6 +73,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -96,6 +105,9 @@
                     <systemPropertyVariables>
                         <api.version>1.40</api.version>
                     </systemPropertyVariables>
+                    <environmentVariables>
+                        <JWT_SECRET>AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=</JWT_SECRET>
+                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>

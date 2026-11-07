@@ -161,7 +161,7 @@ A técnica é demonstrada em aula no Foot Fanatics e aplicada, na mesma semana, 
 
 ## Como executar
 
-### Commit 01 — esqueleto local e Commit 02 — persistência
+### Commits 01–03 — execução local, persistência e login
 
 Pré-requisitos: JDK 21, Docker e Docker Compose. O Maven global não é necessário, pois o projeto possui Maven Wrapper.
 
@@ -177,10 +177,18 @@ $env:SPRING_PROFILES_ACTIVE="local"
 $env:DB_URL="jdbc:postgresql://localhost:5432/organizacao_recursos"
 $env:DB_USERNAME="<usuario-local>"
 $env:DB_PASSWORD="<senha-local>"
+$jwtKeyBytes = New-Object byte[] 48
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+try { $rng.GetBytes($jwtKeyBytes) } finally { $rng.Dispose() }
+$env:JWT_SECRET = [Convert]::ToBase64String($jwtKeyBytes)
+$seedPassword = Read-Host "Senha de desenvolvimento" -AsSecureString
+$env:LOCAL_SEED_PASSWORD = [System.Net.NetworkCredential]::new("", $seedPassword).Password
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-O perfil `local` deve ser ativado explicitamente, como no comando acima ou com `SPRING_PROFILES_ACTIVE=local`. O Maven não carrega automaticamente o arquivo `.env`; por isso, as variáveis `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` precisam estar definidas na sessão do PowerShell que inicia a aplicação. O `.env` nunca deve ser versionado.
+O perfil `local` deve ser ativado explicitamente, como no comando acima ou com `SPRING_PROFILES_ACTIVE=local`. O Maven não carrega automaticamente o arquivo `.env`; por isso, `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` precisam estar definidos na sessão do PowerShell que inicia a aplicação. `JWT_SECRET` deve ser Base64 padrão representando pelo menos 32 bytes gerados por fonte criptograficamente segura; o exemplo gera 48 bytes com `RandomNumberGenerator`. A aplicação lê essa chave exclusivamente do ambiente do processo e a decodifica antes de configurar HS256. Não passe a chave como argumento de linha de comando ou propriedade `-D`. `JWT_TTL_MINUTES` é opcional (padrão 30, limite 1–60) e `JWT_ISSUER` tem padrão `organizacao-recursos`. O `.env` nunca deve ser versionado. Reiniciar com outra chave invalida tokens anteriores.
+
+`LOCAL_SEED_PASSWORD` é opcional e só é usada quando o perfil `local` cria usuários novos. Se ausente, os usuários recebem hash de senha aleatória desconhecida; não há senha padrão. Usuários já existentes nunca têm a senha alterada automaticamente. Para login manual, defina a variável antes da **primeira** inicialização de um banco local novo. Não use o perfil `local` em produção.
 
 Com a aplicação em execução:
 
@@ -189,6 +197,16 @@ Com a aplicação em execução:
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 O Commit 02 ativa PostgreSQL, Flyway V1, identidade e auditoria base. Usuários fictícios são semeados apenas no perfil `local`; o perfil `test` usa PostgreSQL isolado via Testcontainers. Não há autenticação JWT no Commit 02.
+
+No Commit 03, o login aceita e-mail e senha e emite JWT com validade limitada. Exemplo em outra sessão PowerShell, com a senha local definida nela:
+
+```powershell
+$body = @{ email = "professor.local@organizacao-recursos.local"; password = $env:LOCAL_SEED_PASSWORD } | ConvertTo-Json
+$login = Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/auth/login -ContentType application/json -Body $body
+$token = $login.accessToken
+```
+
+Os três papéis persistidos são `SOLICITANTE`, `RESPONSAVEL` e `ADMINISTRADOR`. As rotas de negócio dos commits seguintes serão protegidas no servidor; o projeto ainda não disponibiliza endpoints de recursos ou reservas. Erros de autenticação e autorização usam `code`, `message`, `fieldErrors` e `traceId` em português, sem expor hash ou token. A aplicação recusa iniciar sem `JWT_SECRET`.
 
 ## Documentação
 
