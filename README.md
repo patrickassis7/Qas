@@ -208,6 +208,14 @@ $token = $login.accessToken
 
 Os três papéis persistidos são `SOLICITANTE`, `RESPONSAVEL` e `ADMINISTRADOR`. As rotas de negócio dos commits seguintes serão protegidas no servidor; o projeto ainda não disponibiliza endpoints de recursos ou reservas. Erros de autenticação e autorização usam `code`, `message`, `fieldErrors` e `traceId` em português, sem expor hash ou token. A aplicação recusa iniciar sem `JWT_SECRET`.
 
+## CI e qualidade (Commit 04)
+
+O workflow `.github/workflows/ci.yml` executa em Pull Requests direcionados a `main` ou `develop`, usando Java 21 Temurin, cache Maven e `./mvnw clean verify`. Os testes de integração iniciam PostgreSQL real via Testcontainers; o runner hospedado do GitHub fornece Docker. O wrapper recebe permissão de execução no runner antes do uso.
+
+O JaCoCo gera relatórios HTML e XML em `target/site/jacoco/` durante `verify`. O XML é usado pelo SonarScanner for Maven quando a integração estiver configurada. As metas de 80% de linhas e 70% de branches são acompanhadas como referência e não bloqueiam o build até o gate previsto para o Commit 14.
+
+Para habilitar a análise SonarCloud, um administrador do repositório deve configurar o secret `SONAR_TOKEN` e as variáveis `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY` com os identificadores confirmados no SonarCloud. O workflow omite a análise quando qualquer item estiver ausente e não expõe o token a PRs de forks. Quando a análise é iniciada, erros do scanner causam falha no step. A integração ainda depende de configuração e execução remotas; sua operacionalidade não é presumida.
+
 ## Documentação
 
 | Documento | Conteúdo |

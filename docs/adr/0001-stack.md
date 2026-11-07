@@ -2,7 +2,7 @@
 
 - **Status:** Aceita para a base dos Commits 01 e 02; D1-D8 pendentes de validação com o docente.
 - **Data:** 2026-11-06
-- **Escopo:** Commits 01 e 02 - esqueleto, execução local e persistência base.
+- **Escopo:** Commits 01 a 04 - esqueleto, persistência, autenticação e qualidade da CI.
 
 ## Contexto
 
@@ -39,7 +39,17 @@ As exclusões de persistência foram removidas no Commit 02. A exclusão tempor�
 
 Spring Security OAuth2 Resource Server/Nimbus valida JWT HS256 assinado com `JWT_SECRET` obrigatório no ambiente do processo, sem leitura de argumentos ou propriedades Spring. O valor deve ser Base64 padrão representando pelo menos 32 bytes gerados com fonte criptograficamente segura; a aplicação decodifica e valida o formato antes de criar encoder e decoder. O `sub` é o UUID interno, o emissor é validado e a validade é limitada a 60 minutos. Em cada acesso autenticado, usuário ativo e papéis são consultados no PostgreSQL, evitando acesso após desativação e papéis desatualizados. A senha do seed local é opcional por ambiente; sem ela, o hash é aleatório e desconhecido, e o seed nunca atualiza usuários existentes. O log HTTP/security/SQL é limitado para evitar registro de credenciais mesmo quando `DEBUG` está ativo no ambiente. Erros de rota inexistente retornam 404 padronizado; erros inesperados de servidor permanecem 500. Migration V1 não é alterada.
 
+## Decisões de CI e qualidade do Commit 04
+
+- GitHub Actions valida PRs destinados a `main` e `develop`, em `ubuntu-24.04`, com Eclipse Temurin 21, cache Maven, permissões mínimas e Maven Wrapper. Actions oficiais são fixadas por SHA.
+- Testcontainers 1.21.4 é compatível com a stack testada (Spring Boot 3.4.5, Java 21 e Docker Desktop 29.9.2). Com essa versão, os testes passaram sem a propriedade artificial `api.version=1.40`; a versão fixa foi removida para permitir negociação de API com o daemon.
+- JaCoCo 0.8.16 gera XML e HTML no `verify`. As metas 80% linhas/70% branches são informativas no Commit 04; o gate obrigatório fica para o Commit 14.
+- SonarScanner for Maven 5.8.0.7211 usa `SONAR_TOKEN` em GitHub Secret e os identificadores reais como variáveis do repositório. Análise não autenticada ou com IDs inventados não é executada; ausência de configuração não afeta `clean verify`.
+- WireMock 3.13.2 fica somente em escopo de teste, sem implementar o adaptador de notificação reservado a commit posterior.
+- Regras de proteção de `main`, token e identificadores do SonarCloud exigem configuração administrativa no GitHub/SonarCloud e não são alterados pelo repositório.
+
 ## Pendências
 
 1. Validar D1-D8 com o docente.
-2. Adicionar CI, JaCoCo e SonarCloud no Commit 04.
+2. Confirmar manualmente a proteção da branch `main`, `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY`; executar PR remoto para validar o workflow e a análise.
+3. Tornar obrigatórias as metas JaCoCo de 80% de linhas e 70% de branches no Commit 14, após acompanhar a cobertura real.
