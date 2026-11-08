@@ -8,6 +8,7 @@ import br.com.organizacaorecursos.resource.domain.ResourceType;
 import br.com.organizacaorecursos.resource.infrastructure.ResourceRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import com.github.tomakehurst.wiremock.WireMockServer;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -26,6 +30,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,6 +44,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ApprovalIntegrationTest extends PostgresIntegrationTestSupport {
+
+    private static final WireMockServer NOTIFICATIONS = new WireMockServer(options().dynamicPort());
+
+    static {
+        NOTIFICATIONS.start();
+    }
 
     private static final String PASSWORD = "synthetic-password-only-for-tests";
     private static final Instant FUTURE = Instant.parse("2030-03-04T00:00:00Z");
@@ -47,6 +63,13 @@ class ApprovalIntegrationTest extends PostgresIntegrationTestSupport {
     @Autowired ResourceRepository resources;
     @Autowired JdbcTemplate jdbc;
 
+    @DynamicPropertySource
+    static void notificationProperties(DynamicPropertyRegistry registry) {
+        registry.add("app.notification.base-url", NOTIFICATIONS::baseUrl);
+        registry.add("app.notification.connect-timeout-ms", () -> 500L);
+        registry.add("app.notification.read-timeout-ms", () -> 100L);
+    }
+
     private UserEntity requester;
     private UserEntity responsible;
     private UserEntity bystander;
@@ -59,6 +82,9 @@ class ApprovalIntegrationTest extends PostgresIntegrationTestSupport {
 
     @BeforeEach
     void fixtures() throws Exception {
+        NOTIFICATIONS.resetAll();
+        NOTIFICATIONS.stubFor(com.github.tomakehurst.wiremock.client.WireMock.post(urlEqualTo("/notifications"))
+            .willReturn(aResponse().withStatus(204)));
         requester = user("SOLICITANTE");
         responsible = user("RESPONSAVEL");
         bystander = user("SOLICITANTE");
@@ -69,6 +95,11 @@ class ApprovalIntegrationTest extends PostgresIntegrationTestSupport {
         adminToken = login(admin);
         restricted = resources.saveAndFlush(new ResourceEntity(
                 ResourceType.MATERIAL, "Restrito " + UUID.randomUUID(), "Lab", null, null, true, responsible));
+    }
+
+    @AfterAll
+    static void stopNotificationServer() {
+        NOTIFICATIONS.stop();
     }
 
     @Test
@@ -247,8 +278,58 @@ class ApprovalIntegrationTest extends PostgresIntegrationTestSupport {
         createRequest(bystanderToken, FUTURE, 10, 12).andExpect(status().isCreated());
     }
 
+    @Test
+    @DisplayName("Aprovação, rejeição e cancelamento enviam a notificação simulada")
+    void notifiesApprovalRejectionAndCancellation() throws Exception {
+        String approved = requestReservation(FUTURE, 8, 10);
+        String rejected = requestReservation(FUTURE, 10, 12);
+        String cancelled = requestReservation(FUTURE, 12, 14);
+
+        action(responsibleToken, approved, "approve").andExpect(status().isOk());
+        action(adminToken, rejected, "reject").andExpect(status().isOk());
+        action(requesterToken, cancelled, "cancel").andExpect(status().isOk());
+
+        NOTIFICATIONS.verify(3, postRequestedFor(urlEqualTo("/notifications")));
+        verifyNotification("RESERVA_APROVADA");
+        verifyNotification("RESERVA_REJEITADA");
+        verifyNotification("RESERVA_CANCELADA");
+    }
+
+    @Test
+    @DisplayName("Falha HTTP 500 da notificação não desfaz a aprovação")
+    void notificationServerErrorDoesNotRollbackApproval() throws Exception {
+        NOTIFICATIONS.stubFor(com.github.tomakehurst.wiremock.client.WireMock.post(urlEqualTo("/notifications"))
+                .willReturn(aResponse().withStatus(500)));
+        String id = requestReservation(FUTURE, 8, 10);
+
+        action(responsibleToken, id, "approve").andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("APROVADA"));
+
+        assertThat(statusOf(id)).isEqualTo("APROVADA");
+        NOTIFICATIONS.verify(1, postRequestedFor(urlEqualTo("/notifications")));
+    }
+
+    @Test
+    @DisplayName("Timeout da notificação não desfaz a rejeição")
+    void notificationTimeoutDoesNotRollbackRejection() throws Exception {
+        NOTIFICATIONS.stubFor(com.github.tomakehurst.wiremock.client.WireMock.post(urlEqualTo("/notifications"))
+                .willReturn(aResponse().withStatus(200).withFixedDelay(500)));
+        String id = requestReservation(FUTURE, 8, 10);
+
+        action(adminToken, id, "reject").andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("REJEITADA"));
+
+        assertThat(statusOf(id)).isEqualTo("REJEITADA");
+        NOTIFICATIONS.verify(1, postRequestedFor(urlEqualTo("/notifications")));
+    }
+
     private String requestReservation(Instant day, int startHour, int endHour) throws Exception {
         return id(createRequest(requesterToken, day, startHour, endHour).andExpect(status().isCreated()));
+    }
+
+    private static void verifyNotification(String action) {
+        NOTIFICATIONS.verify(postRequestedFor(urlEqualTo("/notifications"))
+                .withRequestBody(matchingJsonPath("$.action", equalTo(action))));
     }
 
     private org.springframework.test.web.servlet.ResultActions createRequest(

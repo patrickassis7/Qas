@@ -8,6 +8,8 @@ import br.com.organizacaorecursos.approval.infrastructure.WithdrawalRecordReposi
 import br.com.organizacaorecursos.audit.application.AuditService;
 import br.com.organizacaorecursos.auth.domain.UserEntity;
 import br.com.organizacaorecursos.auth.infrastructure.UserRepository;
+import br.com.organizacaorecursos.notification.application.NotificationPort;
+import br.com.organizacaorecursos.notification.application.ReservationNotification;
 import br.com.organizacaorecursos.reservation.api.dto.ReservationResponse;
 import br.com.organizacaorecursos.reservation.application.ReservationMapper;
 import br.com.organizacaorecursos.reservation.application.ReservationNotAllowedException;
@@ -38,6 +40,7 @@ public class ApprovalService {
     private final UserRepository users;
     private final AuditService audit;
     private final ReservationMapper mapper;
+    private final NotificationPort notifications;
 
     public ApprovalService(
             ReservationRepository reservations,
@@ -45,7 +48,8 @@ public class ApprovalService {
             WithdrawalRecordRepository withdrawals,
             UserRepository users,
             AuditService audit,
-            ReservationMapper mapper
+            ReservationMapper mapper,
+            NotificationPort notifications
     ) {
         this.reservations = reservations;
         this.approvals = approvals;
@@ -53,6 +57,7 @@ public class ApprovalService {
         this.users = users;
         this.audit = audit;
         this.mapper = mapper;
+        this.notifications = notifications;
     }
 
     public ReservationResponse approve(UUID id, UUID actorId, boolean admin, String note) {
@@ -131,7 +136,9 @@ public class ApprovalService {
         approvals.save(new ApprovalEntity(reservation, actor(actorId), decision, note));
 
         audit.registrar(actorId, action, ENTITY, id, transition(previous, reservation, note));
-        return mapper.toResponse(reservations.saveAndFlush(reservation));
+        ReservationEntity saved = reservations.saveAndFlush(reservation);
+        notifications.send(ReservationNotification.from(saved, action));
+        return mapper.toResponse(saved);
     }
 
     private ReservationEntity load(UUID id) {

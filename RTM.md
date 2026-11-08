@@ -13,7 +13,7 @@ Legenda de status: ⬜ Pendente · 🟨 Em andamento · ✅ Verificado
 | RF-06 / RN-03 Dupla reserva simultânea | Duas reservas aceitas para o mesmo recurso | N threads reservando o mesmo recurso e horário; exatamente 1 aceita | Concorrência com Testcontainers; carga JMeter | — | ⬜ |
 | RF-07 / RN-06 Aprovação de recurso restrito | Aprovação por perfil não autorizado | SOL tenta aprovar → negado; RESP aprova → sucesso | TDD/BDD, API | — | ⬜ |
 | RF-08 / RN-04 Bloqueio por manutenção | Recurso em manutenção reservado | Reserva dentro de período bloqueado é recusada; fora do período é aceita | Unitário, integração, TDD/BDD | — | ⬜ |
-| RF-10 / RN-08 Histórico auditável | Mudança de estado sem registro | Cada transição de estado gera registro com autor, data e estados | Integração | — | ⬜ |
+| RF-10 / RN-08 Histórico auditável | Mudança de estado sem registro ou exposição de credenciais | Persistência, consulta administrativa paginada e bloqueio de senha/token | Integração | `IdentityAuditIntegrationTest` | ✅ |
 | RN-01 Término > início | Intervalo inválido persistido | Início igual, anterior e posterior ao término | Unitário parametrizado | — | ⬜ |
 | RN-05 Fluxo de estados | Transição inválida de estado | Matriz de transições válidas e inválidas | Unitário parametrizado | — | ⬜ |
 | RN-07 Reserva iniciada não pode ser apagada | Perda de registro de reserva em uso | Exclusão de reserva `EM_USO` é recusada | Integração, API | — | ⬜ |
@@ -26,10 +26,10 @@ Legenda de status: ⬜ Pendente · 🟨 Em andamento · ✅ Verificado
 | RF-03 Pesquisa | Resultado inconsistente com a disponibilidade | Filtros por tipo, capacidade, localização, competência e disponibilidade | Integração, API | — | ⬜ |
 | RF-04 Criar/alterar/cancelar reserva | Alteração gera conflito não detectado | Alterar para horário em conflito é recusado | API, E2E | — | ⬜ |
 | RF-09 Retirada e devolução | Material sem registro de retirada | Registro de retirada e devolução ligado à reserva | Integração | — | ⬜ |
-| RF-11 Notificação | Falha externa derruba a reserva | Integração externa simulada (WireMock): sucesso, erro e timeout | Integração com WireMock | — | ⬜ |
-| RF-12 Relatório de utilização | Números divergentes dos dados | Cálculo de utilização, carga horária e conflitos evitados | Integração | — | ⬜ |
+| RF-11 Notificação | Falha externa derruba a reserva | WireMock valida envio, HTTP 500 e timeout sem rollback | Integração com WireMock | `ApprovalIntegrationTest` | ✅ |
+| RF-12 Relatório de utilização | Números divergentes dos dados | Dataset manual verifica horas, percentual, recurso e conflitos | Integração | `UtilizationReportIntegrationTest` | ✅ |
 | RF-13 Interface e mensagens de erro | Erro técnico exposto ao usuário | Mensagens compreensíveis; layout em tela pequena | E2E | — | ⬜ |
-| RF-14 Documentação de API | Documentação desatualizada | Documentação gerada/validada a partir da API | Revisão | — | ⬜ |
+| RF-14 Documentação de API | Documentação desatualizada | Revisão dos endpoints, filtros e semântica do relatório | Revisão | `README.md` | ✅ |
 | RNF-01 Cobertura | Cobertura alta com testes triviais | Relatório JaCoCo ≥ 80% linhas / 70% branches + revisão da qualidade dos testes | CI | — | ⬜ |
 | RNF-02 Análise estática | Vulnerabilidade crítica | Quality Gate do SonarCloud | CI | — | ⬜ |
 | RNF-03 Pipeline | Regressão chega ao branch principal | GitHub Actions em cada pull request | CI | — | ⬜ |
@@ -43,4 +43,4 @@ Legenda de status: ⬜ Pendente · 🟨 Em andamento · ✅ Verificado
 
 | Item | Meta | Atual |
 |---|---|---|
-| Requisitos críticos verificados | 100% | 0 / 9 |
+| Requisitos críticos verificados | 100% | 1 / 9 |

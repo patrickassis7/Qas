@@ -3,6 +3,8 @@ package br.com.organizacaorecursos.reservation.application;
 import br.com.organizacaorecursos.audit.application.AuditService;
 import br.com.organizacaorecursos.auth.domain.UserEntity;
 import br.com.organizacaorecursos.auth.infrastructure.UserRepository;
+import br.com.organizacaorecursos.notification.application.NotificationPort;
+import br.com.organizacaorecursos.notification.application.ReservationNotification;
 import br.com.organizacaorecursos.reservation.api.dto.CreateReservationRequest;
 import br.com.organizacaorecursos.reservation.api.dto.ReservationResponse;
 import br.com.organizacaorecursos.reservation.api.dto.UpdateReservationRequest;
@@ -42,6 +44,7 @@ public class ReservationService {
     private final AgendaConflictChecker agenda;
     private final AuditService audit;
     private final ReservationMapper mapper;
+    private final NotificationPort notifications;
 
     public ReservationService(
             ReservationRepository reservations,
@@ -49,7 +52,8 @@ public class ReservationService {
             UserRepository users,
             AgendaConflictChecker agenda,
             AuditService audit,
-            ReservationMapper mapper
+            ReservationMapper mapper,
+            NotificationPort notifications
     ) {
         this.reservations = reservations;
         this.resources = resources;
@@ -57,6 +61,7 @@ public class ReservationService {
         this.agenda = agenda;
         this.audit = audit;
         this.mapper = mapper;
+        this.notifications = notifications;
     }
 
     public ReservationResponse create(UUID actorId, CreateReservationRequest request) {
@@ -118,7 +123,9 @@ public class ReservationService {
 
         reservation.transitionTo(ReservationStatus.CANCELADA);
         audit.registrar(actorId, "RESERVA_CANCELADA", ENTITY, reservation.getId(), details(reservation));
-        return mapper.toResponse(reservations.saveAndFlush(reservation));
+        ReservationEntity saved = reservations.saveAndFlush(reservation);
+        notifications.send(ReservationNotification.from(saved, "RESERVA_CANCELADA"));
+        return mapper.toResponse(saved);
     }
 
     @Transactional(readOnly = true)
@@ -183,12 +190,15 @@ public class ReservationService {
             UUID ignoredReservationId
     ) {
         List<String> conflicts = new ArrayList<>();
+        Set<UUID> conflictingResourceIds = new LinkedHashSet<>();
         for (ResourceEntity resource : targets) {
             if (agenda.isReserved(resource.getId(), startAt, endAt, ignoredReservationId)) {
                 conflicts.add("recurso '" + resource.getName() + "' já reservado");
+                conflictingResourceIds.add(resource.getId());
             }
             if (agenda.isUnderMaintenance(resource.getId(), startAt, endAt)) {
                 conflicts.add("recurso '" + resource.getName() + "' em manutenção");
+                conflictingResourceIds.add(resource.getId());
             }
         }
         if (conflicts.isEmpty()) {
@@ -198,7 +208,7 @@ public class ReservationService {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("startAt", startAt.toString());
         details.put("endAt", endAt.toString());
-        details.put("resourceIds", targets.stream().map(resource -> resource.getId().toString()).toList());
+        details.put("resourceIds", conflictingResourceIds.stream().map(UUID::toString).sorted().toList());
         details.put("conflicts", conflicts);
         audit.registrarIndependente(actorId, "CONFLITO_EVITADO", ENTITY, ignoredReservationId, details);
 
@@ -212,6 +222,7 @@ public class ReservationService {
             Map<String, Object> details = details(reservation);
             details.put("mode", "AUTOMATICA");
             audit.registrar(actorId, "RESERVA_APROVADA_AUTOMATICAMENTE", ENTITY, reservation.getId(), details);
+            notifications.send(ReservationNotification.from(reservation, "RESERVA_APROVADA_AUTOMATICAMENTE"));
         }
     }
 

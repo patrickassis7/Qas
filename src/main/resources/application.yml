@@ -25,6 +25,10 @@ app:
   auth:
     issuer: ${JWT_ISSUER:organizacao-recursos}
     ttl-minutes: ${JWT_TTL_MINUTES:30}
+  notification:
+    base-url: ${NOTIFICATION_BASE_URL:http://localhost:8099}
+    connect-timeout-ms: ${NOTIFICATION_CONNECT_TIMEOUT_MS:500}
+    read-timeout-ms: ${NOTIFICATION_READ_TIMEOUT_MS:500}
 
 logging:
   level:

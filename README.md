@@ -206,7 +206,13 @@ $login = Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/auth/l
 $token = $login.accessToken
 ```
 
-Os três papéis persistidos são `SOLICITANTE`, `RESPONSAVEL` e `ADMINISTRADOR`. As rotas de negócio dos commits seguintes serão protegidas no servidor; o projeto ainda não disponibiliza endpoints de recursos ou reservas. Erros de autenticação e autorização usam `code`, `message`, `fieldErrors` e `traceId` em português, sem expor hash ou token. A aplicação recusa iniciar sem `JWT_SECRET`.
+Os três papéis persistidos são `SOLICITANTE`, `RESPONSAVEL` e `ADMINISTRADOR`. As rotas de negócio exigem JWT. A auditoria é consultada por `GET /api/v1/audit-events` (somente Administrador), com filtros `actorId`, `action`, `entityType`, `entityId`, `from` e `to`, além de `page` e `size` (máximo 100). A resposta expõe `actorId`, nunca a entidade de usuário ou seu hash; detalhes com chaves de senha, token, segredo ou autorização são recusados pela aplicação e pelo banco.
+
+O relatório `GET /api/v1/reports/utilization` é permitido a Responsável e Administrador. Informe `startAt` e `endAt` em ISO-8601; `resourceId` é opcional. O intervalo é semiaberto `[startAt, endAt)`. A carga soma a duração sobreposta ao período para reservas `APROVADA`, `EM_USO` e `CONCLUIDA`; canceladas, rejeitadas e não comparecimentos não contam. A utilização percentual divide as horas alocadas pela duração total do intervalo. Conflitos evitados contam eventos `CONFLITO_EVITADO` no intervalo e são atribuídos apenas aos recursos efetivamente conflitantes.
+
+As transições de aprovação, rejeição e cancelamento (incluindo aprovação automática) enviam `POST /notifications` ao adaptador HTTP simulado. Configure `NOTIFICATION_BASE_URL` (padrão `http://localhost:8099`), `NOTIFICATION_CONNECT_TIMEOUT_MS` e `NOTIFICATION_READ_TIMEOUT_MS` (padrão de 500 ms). Erros HTTP e timeouts são registrados sem desfazer a reserva.
+
+Erros de autenticação e autorização usam `code`, `message`, `fieldErrors` e `traceId` em português, sem expor hash ou token. A aplicação recusa iniciar sem `JWT_SECRET`.
 
 ## CI e qualidade (Commit 04)
 

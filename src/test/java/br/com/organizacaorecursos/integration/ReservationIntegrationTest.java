@@ -118,6 +118,11 @@ class ReservationIntegrationTest extends PostgresIntegrationTestSupport {
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString(teacher.getName())));
 
         assertThat(reservationCount(room)).isZero();
+        String conflictingResourceIds = jdbc.queryForObject(
+                "select details->'resourceIds'::text from audit_events "
+                        + "where action = 'CONFLITO_EVITADO' order by occurred_at desc limit 1",
+                String.class);
+        assertThat(conflictingResourceIds).contains(teacher.getId().toString()).doesNotContain(room.getId().toString());
     }
 
     @Test

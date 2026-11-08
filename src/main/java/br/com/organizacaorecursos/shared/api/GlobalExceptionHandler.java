@@ -1,9 +1,11 @@
 package br.com.organizacaorecursos.shared.api;
 
 import br.com.organizacaorecursos.auth.application.InvalidCredentialsException;
+import br.com.organizacaorecursos.audit.application.InvalidAuditQueryException;
 import br.com.organizacaorecursos.maintenance.application.InvalidMaintenancePeriodException;
 import br.com.organizacaorecursos.maintenance.application.MaintenanceOverlapException;
 import br.com.organizacaorecursos.reservation.application.InvalidReservationPeriodException;
+import br.com.organizacaorecursos.report.application.InvalidReportPeriodException;
 import br.com.organizacaorecursos.reservation.application.ReservationConflictException;
 import br.com.organizacaorecursos.reservation.application.ReservationNotAllowedException;
 import br.com.organizacaorecursos.reservation.application.ReservationNotFoundException;
@@ -46,6 +48,14 @@ public class GlobalExceptionHandler {
                 TraceIdFilter.traceId(request)
         ));
     }
+
+        @ExceptionHandler(InvalidAuditQueryException.class)
+        ResponseEntity<ApiErrorResponse> invalidAuditQuery(
+                        InvalidAuditQueryException exception,
+                        HttpServletRequest request
+        ) {
+                return error(HttpStatus.BAD_REQUEST, "INVALID_AUDIT_QUERY", exception.getMessage(), request);
+        }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     ResponseEntity<ApiErrorResponse> resourceNotFound(
@@ -130,6 +140,14 @@ public class GlobalExceptionHandler {
     ) {
         return error(HttpStatus.BAD_REQUEST, "INVALID_RESERVATION_PERIOD", exception.getMessage(), request);
     }
+
+        @ExceptionHandler(InvalidReportPeriodException.class)
+        ResponseEntity<ApiErrorResponse> invalidReportPeriod(
+                        InvalidReportPeriodException exception,
+                        HttpServletRequest request
+        ) {
+                return error(HttpStatus.BAD_REQUEST, "INVALID_REPORT_PERIOD", exception.getMessage(), request);
+        }
 
     @ExceptionHandler(ReservationNotFoundException.class)
     ResponseEntity<ApiErrorResponse> reservationNotFound(
