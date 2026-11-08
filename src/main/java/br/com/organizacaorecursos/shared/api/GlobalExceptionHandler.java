@@ -1,6 +1,8 @@
 package br.com.organizacaorecursos.shared.api;
 
 import br.com.organizacaorecursos.auth.application.InvalidCredentialsException;
+import br.com.organizacaorecursos.maintenance.application.InvalidMaintenancePeriodException;
+import br.com.organizacaorecursos.maintenance.application.MaintenanceOverlapException;
 import br.com.organizacaorecursos.resource.application.ResourceAlreadyExistsException;
 import br.com.organizacaorecursos.resource.application.ResourceNotFoundException;
 import br.com.organizacaorecursos.shared.infrastructure.web.TraceIdFilter;
@@ -59,6 +61,32 @@ public class GlobalExceptionHandler {
     ) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse(
                 "RESOURCE_ALREADY_EXISTS",
+                exception.getMessage(),
+                List.of(),
+                TraceIdFilter.traceId(request)
+        ));
+    }
+
+    @ExceptionHandler(InvalidMaintenancePeriodException.class)
+    ResponseEntity<ApiErrorResponse> invalidMaintenancePeriod(
+            InvalidMaintenancePeriodException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiErrorResponse(
+                "INVALID_MAINTENANCE_PERIOD",
+                exception.getMessage(),
+                List.of(),
+                TraceIdFilter.traceId(request)
+        ));
+    }
+
+    @ExceptionHandler(MaintenanceOverlapException.class)
+    ResponseEntity<ApiErrorResponse> maintenanceOverlap(
+            MaintenanceOverlapException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse(
+                "MAINTENANCE_OVERLAP",
                 exception.getMessage(),
                 List.of(),
                 TraceIdFilter.traceId(request)
