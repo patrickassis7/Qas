@@ -7,6 +7,7 @@ import br.com.organizacaorecursos.auth.infrastructure.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -55,6 +56,13 @@ public class AuditService {
                 detailsNode
         );
         return auditEventRepository.save(event);
+    }
+
+    // Transação própria: o evento deve persistir mesmo quando a operação de negócio é revertida.
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public AuditEventEntity registrarIndependente(UUID ator, String acao, String entidade, UUID id,
+                                                  Map<String, ?> detalhes) {
+        return registrar(ator, acao, entidade, id, detalhes);
     }
 
     private void validateDetails(JsonNode node) {

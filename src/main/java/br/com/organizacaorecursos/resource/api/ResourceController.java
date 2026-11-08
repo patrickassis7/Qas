@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,9 +75,12 @@ public class ResourceController {
 
     @GetMapping("/availability")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public List<ResourceAvailabilityResponse> availability() {
+    public List<ResourceAvailabilityResponse> availability(
+            @RequestParam(required = false) Instant startAt,
+            @RequestParam(required = false) Instant endAt
+    ) {
 
-        return resourceService.availability()
+        return resourceService.availability(startAt, endAt)
                 .stream()
                 .map(resourceMapper::toAvailabilityResponse)
                 .toList();

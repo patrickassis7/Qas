@@ -2,6 +2,8 @@ package br.com.organizacaorecursos.resource.application;
 
 import br.com.organizacaorecursos.auth.domain.UserEntity;
 import br.com.organizacaorecursos.auth.infrastructure.UserRepository;
+import br.com.organizacaorecursos.reservation.application.AgendaConflictChecker;
+import br.com.organizacaorecursos.reservation.application.InvalidReservationPeriodException;
 import br.com.organizacaorecursos.resource.api.dto.CreateResourceRequest;
 import br.com.organizacaorecursos.resource.api.dto.ResourceSearchRequest;
 import br.com.organizacaorecursos.resource.api.dto.UpdateResourceRequest;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,15 +27,18 @@ public class ResourceService {
     private final ResourceRepository resourceRepository;
     private final UserRepository userRepository;
     private final ResourceValidator resourceValidator;
+    private final AgendaConflictChecker agendaConflictChecker;
 
     public ResourceService(
             ResourceRepository resourceRepository,
             UserRepository userRepository,
-            ResourceValidator resourceValidator
+            ResourceValidator resourceValidator,
+            AgendaConflictChecker agendaConflictChecker
     ) {
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.resourceValidator = resourceValidator;
+        this.agendaConflictChecker = agendaConflictChecker;
     }
 
     @Transactional(readOnly = true)
@@ -58,6 +64,23 @@ public class ResourceService {
                 .stream()
                 .filter(resource ->
                         resource.getStatus() == ResourceStatus.ATIVO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResourceEntity> availability(Instant startAt, Instant endAt) {
+        List<ResourceEntity> active = availability();
+
+        if (startAt == null && endAt == null) {
+            return active;
+        }
+        if (startAt == null || endAt == null || !endAt.isAfter(startAt)) {
+            throw new InvalidReservationPeriodException(
+                    "Informe startAt e endAt, com fim posterior ao início.");
+        }
+
+        return active.stream()
+                .filter(resource -> agendaConflictChecker.isFree(resource.getId(), startAt, endAt))
                 .toList();
     }
 

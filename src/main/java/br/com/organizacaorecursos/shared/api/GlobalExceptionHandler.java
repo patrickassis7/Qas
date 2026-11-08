@@ -3,6 +3,11 @@ package br.com.organizacaorecursos.shared.api;
 import br.com.organizacaorecursos.auth.application.InvalidCredentialsException;
 import br.com.organizacaorecursos.maintenance.application.InvalidMaintenancePeriodException;
 import br.com.organizacaorecursos.maintenance.application.MaintenanceOverlapException;
+import br.com.organizacaorecursos.reservation.application.InvalidReservationPeriodException;
+import br.com.organizacaorecursos.reservation.application.ReservationConflictException;
+import br.com.organizacaorecursos.reservation.application.ReservationNotAllowedException;
+import br.com.organizacaorecursos.reservation.application.ReservationNotFoundException;
+import br.com.organizacaorecursos.reservation.domain.InvalidReservationTransitionException;
 import br.com.organizacaorecursos.resource.application.ResourceAlreadyExistsException;
 import br.com.organizacaorecursos.resource.application.ResourceNotFoundException;
 import br.com.organizacaorecursos.shared.infrastructure.web.TraceIdFilter;
@@ -11,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -93,6 +99,60 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(ReservationConflictException.class)
+    ResponseEntity<ApiErrorResponse> reservationConflict(
+            ReservationConflictException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.CONFLICT, "RESERVATION_CONFLICT", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ReservationNotAllowedException.class)
+    ResponseEntity<ApiErrorResponse> reservationNotAllowed(
+            ReservationNotAllowedException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.CONFLICT, "RESERVATION_NOT_ALLOWED", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidReservationTransitionException.class)
+    ResponseEntity<ApiErrorResponse> invalidReservationTransition(
+            InvalidReservationTransitionException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.CONFLICT, "INVALID_RESERVATION_TRANSITION", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(InvalidReservationPeriodException.class)
+    ResponseEntity<ApiErrorResponse> invalidReservationPeriod(
+            InvalidReservationPeriodException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.BAD_REQUEST, "INVALID_RESERVATION_PERIOD", exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(ReservationNotFoundException.class)
+    ResponseEntity<ApiErrorResponse> reservationNotFound(
+            ReservationNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.NOT_FOUND, "RESERVATION_NOT_FOUND", exception.getMessage(), request);
+    }
+
+    private static ResponseEntity<ApiErrorResponse> error(
+            HttpStatus status,
+            String code,
+            String message,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.status(status).body(new ApiErrorResponse(
+                code,
+                message,
+                List.of(),
+                TraceIdFilter.traceId(request)
+        ));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiErrorResponse> invalidFields(
             MethodArgumentNotValidException exception,
@@ -122,6 +182,12 @@ public class GlobalExceptionHandler {
                 List.of(),
                 TraceIdFilter.traceId(request)
         ));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    ResponseEntity<ApiErrorResponse> methodNotAllowed(HttpServletRequest request) {
+        return error(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED",
+                "Método HTTP não permitido para esta rota.", request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
