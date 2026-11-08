@@ -85,6 +85,28 @@ public class ResourceEntity {
         this.status = ResourceStatus.ATIVO;
     }
 
+    public void update(
+            ResourceType type,
+            String name,
+            String location,
+            Integer capacity,
+            String skills,
+            boolean restricted,
+            UserEntity responsible
+    ) {
+        this.type = type;
+        this.name = name;
+        this.location = location;
+        this.capacity = capacity;
+        this.skills = skills;
+        this.restricted = restricted;
+        this.responsible = responsible;
+    }
+
+    public void deactivate() {
+        this.status = ResourceStatus.INATIVO;
+    }
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();
