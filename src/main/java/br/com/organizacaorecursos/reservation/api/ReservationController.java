@@ -4,6 +4,7 @@ import br.com.organizacaorecursos.reservation.api.dto.CreateReservationRequest;
 import br.com.organizacaorecursos.reservation.api.dto.ReservationResponse;
 import br.com.organizacaorecursos.reservation.api.dto.UpdateReservationRequest;
 import br.com.organizacaorecursos.reservation.application.ReservationService;
+import br.com.organizacaorecursos.shared.infrastructure.web.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -17,15 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/reservations")
 public class ReservationController {
-
-    private static final String ADMIN_AUTHORITY = "ROLE_ADMINISTRADOR";
 
     private final ReservationService reservationService;
 
@@ -71,11 +69,10 @@ public class ReservationController {
     }
 
     private static UUID userId(Authentication authentication) {
-        return UUID.fromString(((Jwt) authentication.getPrincipal()).getSubject());
+        return CurrentUser.id(authentication);
     }
 
     private static boolean isAdmin(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> ADMIN_AUTHORITY.equals(authority.getAuthority()));
+        return CurrentUser.isAdmin(authentication);
     }
 }

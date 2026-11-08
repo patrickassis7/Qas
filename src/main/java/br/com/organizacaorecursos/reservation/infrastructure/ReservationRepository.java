@@ -2,19 +2,27 @@ package br.com.organizacaorecursos.reservation.infrastructure;
 
 import br.com.organizacaorecursos.reservation.domain.ReservationEntity;
 import br.com.organizacaorecursos.reservation.domain.ReservationStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ReservationRepository extends JpaRepository<ReservationEntity, UUID> {
 
     Page<ReservationEntity> findByRequesterId(UUID requesterId, Pageable pageable);
+
+    // Serializa transições de estado concorrentes sobre a mesma reserva.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select r from ReservationEntity r where r.id = :id")
+    Optional<ReservationEntity> findByIdForUpdate(@Param("id") UUID id);
 
     /** Sobreposição semiaberta: existente.start < novo.end && novo.start < existente.end. */
     @Query("""

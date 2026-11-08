@@ -76,7 +76,7 @@ public class ReservationService {
     }
 
     public ReservationResponse update(UUID id, UUID actorId, boolean admin, UpdateReservationRequest request) {
-        ReservationEntity reservation = find(id);
+        ReservationEntity reservation = findForUpdate(id);
         requireOwnerOrAdmin(reservation, actorId, admin);
 
         if (reservation.getStatus() != ReservationStatus.SOLICITADA
@@ -113,7 +113,7 @@ public class ReservationService {
     }
 
     public ReservationResponse cancel(UUID id, UUID actorId, boolean admin) {
-        ReservationEntity reservation = find(id);
+        ReservationEntity reservation = findForUpdate(id);
         requireOwnerOrAdmin(reservation, actorId, admin);
 
         reservation.transitionTo(ReservationStatus.CANCELADA);
@@ -139,6 +139,10 @@ public class ReservationService {
 
     private ReservationEntity find(UUID id) {
         return reservations.findById(id).orElseThrow(() -> new ReservationNotFoundException(id));
+    }
+
+    private ReservationEntity findForUpdate(UUID id) {
+        return reservations.findByIdForUpdate(id).orElseThrow(() -> new ReservationNotFoundException(id));
     }
 
     private static void requireOwnerOrAdmin(ReservationEntity reservation, UUID actorId, boolean admin) {
