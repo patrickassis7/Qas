@@ -39,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -103,6 +104,14 @@ class AuthIntegrationTest extends PostgresIntegrationTestSupport {
         String token = mapper.readTree(response).get("accessToken").asText();
         mvc.perform(get("/api/v1/test/authenticated").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void protectedApiResponsesIncludeDefaultSecurityHeaders() throws Exception {
+        mvc.perform(get("/api/v1/test/authenticated").header("Authorization", "Bearer " + login(solicitante)))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("X-Frame-Options", "DENY"));
     }
 
     @ParameterizedTest

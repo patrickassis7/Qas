@@ -20,6 +20,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -200,6 +201,35 @@ public class GlobalExceptionHandler {
                 List.of(),
                 TraceIdFilter.traceId(request)
         ));
+    }
+
+    @ExceptionHandler(InvalidPaginationException.class)
+    ResponseEntity<ApiErrorResponse> invalidPagination(
+            InvalidPaginationException exception,
+            HttpServletRequest request
+    ) {
+        List<ApiErrorResponse.FieldError> fields = new java.util.ArrayList<>();
+        if (exception.isInvalidPage()) {
+            fields.add(new ApiErrorResponse.FieldError("page", "A página deve ser maior ou igual a zero."));
+        }
+        if (exception.isInvalidSize()) {
+            fields.add(new ApiErrorResponse.FieldError("size", "O tamanho deve estar entre 1 e 100."));
+        }
+        return ResponseEntity.badRequest().body(new ApiErrorResponse(
+                "INVALID_PAGINATION", "Parâmetros de paginação inválidos.", fields,
+                TraceIdFilter.traceId(request)));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ApiErrorResponse> invalidRequestParameter(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request
+    ) {
+        return ResponseEntity.badRequest().body(new ApiErrorResponse(
+                "INVALID_REQUEST_PARAMETER",
+                "Um parâmetro da requisição possui formato inválido.",
+                List.of(new ApiErrorResponse.FieldError(exception.getName(), "Informe um valor válido.")),
+                TraceIdFilter.traceId(request)));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

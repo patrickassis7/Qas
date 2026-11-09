@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -203,6 +205,39 @@ class ReservationIntegrationTest extends PostgresIntegrationTestSupport {
 
         assertThat(otherList).doesNotContain(id);
         assertThat(ownerList).contains(id);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "/api/v1/resources, -1, 20",
+            "/api/v1/resources, 0, 0",
+            "/api/v1/resources, 0, 101",
+            "/api/v1/reservations, -1, 20",
+            "/api/v1/reservations, 0, 0",
+            "/api/v1/reservations, 0, 101"
+    })
+    void invalidPaginationReturnsUniformBadRequest(String path, int page, int size) throws Exception {
+        String response = mvc.perform(get(path + "?page=" + page + "&size=" + size)
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_PAGINATION"))
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.fieldErrors").isArray())
+                .andExpect(jsonPath("$.traceId").isNotEmpty())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(response).doesNotContain("IllegalArgumentException", "stackTrace", "exception");
+    }
+
+    @Test
+    void malformedPaginationParameterReturnsUniformBadRequest() throws Exception {
+        String response = mvc.perform(get("/api/v1/resources?page=not-a-number&size=20")
+                        .header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST_PARAMETER"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("page"))
+                .andExpect(jsonPath("$.traceId").isNotEmpty())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(response).doesNotContain("not-a-number", "MethodArgumentTypeMismatchException", "stackTrace");
     }
 
     @Test
