@@ -1,8 +1,8 @@
 # ADR 0001: Stack e decisões do projeto
 
-- **Status:** Aceita para a base dos Commits 01 e 02; D1-D8 pendentes de validação com o docente.
+- **Status:** Decisões da stack aceitas; decisões D1-D8 adotadas conforme a especificação e ainda pendentes de validação formal com o docente.
 - **Data:** 2026-11-06
-- **Escopo:** Commits 01 a 04 - esqueleto, persistência, autenticação e qualidade da CI.
+- **Escopo:** Stack e decisões D1-D8 do projeto Organização de Recursos.
 
 ## Contexto
 
@@ -10,16 +10,16 @@ O projeto acadêmico Organização de Recursos precisa de uma base Java 21 + Spr
 
 ## Decisões registradas
 
-| ID | Decisão adotada na especificação | Registro neste incremento |
+| ID | Decisão adotada na especificação | Implementação observada e situação de integração |
 |---|---|---|
-| D1 | `SOLICITADA`, `APROVADA` e `EM_USO` ocupam a agenda. | Apenas registrada. A regra de reserva será implementada nos Commits 09-10. |
-| D2 | Recurso comum é aprovado automaticamente, com auditoria. | Apenas registrada. A aprovação e a auditoria funcional entram nos commits posteriores. |
-| D3 | Material é unidade exclusiva, sem controle de estoque. | Apenas registrada para o modelo de recursos do Commit 05. |
-| D4 | Recurso restrito possui `responsible_id`; responsável e administrador podem aprovar conforme o escopo. | Apenas registrada para o modelo e fluxo de aprovação. |
-| D5 | Intervalo semiaberto `[início, fim)`, conflito quando `a < d AND c < b`, com UTC no banco. | Apenas registrada. A persistência base já usa `TIMESTAMPTZ`/UTC no Commit 02; a regra entra nos Commits 09-10. |
-| D6 | Hash de senha com BCrypt. | Implementada para autenticação e seed local no Commit 03. |
-| D7 | Interface `NotificationPort` com adaptador HTTP simulado. | Não implementada no Commit 01; fica para os commits de notificação. |
-| D8 | Página estática HTML/CSS/JS responsiva servida pelo Spring Boot. | Não implementada no Commit 01; fica para o Commit 16. |
+| D1 | `SOLICITADA`, `APROVADA` e `EM_USO` ocupam a agenda. | Implementada em `ReservationStatus.occupiesAgenda()` e usada por `AgendaConflictChecker`; também descrita em [ADR 0002](0002-concorrencia-reservas.md). Presente em `origin/develop`. |
+| D2 | Recurso comum é aprovado automaticamente, com auditoria. | Implementada em `ReservationService.approveAutomaticallyIfCommon()`; transição e evento de auditoria são cobertos por testes de integração. Presente em `origin/develop`. |
+| D3 | Material é unidade exclusiva, sem controle de estoque. | O tipo `MATERIAL` é um recurso individual (`ResourceEntity`); não há quantidade ou tabela de estoque. A agenda comum impede sobreposição do mesmo recurso. Presente em `origin/develop`; não representa controle de inventário. |
+| D4 | Recurso restrito possui `responsible_id`; responsável e administrador podem aprovar conforme o escopo. | `ResourceEntity.responsible` mapeia `responsible_id`; `ApprovalService` exige administrador ou responsável por todos os recursos restritos da reserva e impede o solicitante de decidir a própria reserva. Presente em `origin/develop`. |
+| D5 | Intervalo semiaberto `[início, fim)`, conflito quando `a < d AND c < b`, com UTC no banco. | Implementada pela consulta de sobreposição em `ReservationRepository`, pelas datas `TIMESTAMPTZ` e configuração JPA UTC; concorrência usa lock pessimista por recurso, conforme ADR 0002. Presente em `origin/develop`. |
+| D6 | Hash de senha com BCrypt. | Implementada pelo `PasswordEncoder` BCrypt e `LoginService`; testes de autenticação cobrem login e falhas. Presente em `origin/develop`. |
+| D7 | Interface `NotificationPort` com adaptador HTTP simulado. | Implementada por `NotificationPort` e `HttpNotificationAdapter`; a integração HTTP é configurável e testada com WireMock. Não há provedor externo de produção configurado. Presente em `origin/develop`. |
+| D8 | Página estática HTML/CSS/JS responsiva servida pelo Spring Boot. | Implementada em `origin/feat/16-frontend-rf13` (`src/main/resources/static/`); PR #1 está aberto para `develop`. Não está presente em `origin/develop` enquanto o PR não for integrado. A matriz completa de validação visual responsiva continua pendente. |
 
 ## Decisão de stack do Commit 01
 
@@ -43,13 +43,13 @@ Spring Security OAuth2 Resource Server/Nimbus valida JWT HS256 assinado com `JWT
 
 - GitHub Actions valida PRs destinados a `main` e `develop`, em `ubuntu-24.04`, com Eclipse Temurin 21, cache Maven, permissões mínimas e Maven Wrapper. Actions oficiais são fixadas por SHA.
 - Testcontainers 1.21.4 é compatível com a stack testada (Spring Boot 3.4.5, Java 21 e Docker Desktop 29.9.2). Com essa versão, os testes passaram sem a propriedade artificial `api.version=1.40`; a versão fixa foi removida para permitir negociação de API com o daemon.
-- JaCoCo 0.8.16 gera XML e HTML no `verify`. As metas 80% linhas/70% branches são informativas no Commit 04; o gate obrigatório fica para o Commit 14.
+- JaCoCo 0.8.16 gera XML e HTML no `verify`. O gate de 80% de linhas e 70% de branches foi introduzido no Commit 14; os resultados específicos por branch e execução são registrados no relatório de qualidade.
 - SonarScanner for Maven 5.8.0.7211 usa `SONAR_TOKEN` em GitHub Secret e os identificadores reais como variáveis do repositório. Análise não autenticada ou com IDs inventados não é executada; ausência de configuração não afeta `clean verify`.
-- WireMock 3.13.2 fica somente em escopo de teste, sem implementar o adaptador de notificação reservado a commit posterior.
+- WireMock 3.13.2 fica somente em escopo de teste e cobre o adaptador HTTP de notificação implementado no módulo `notification`.
 - Regras de proteção de `main`, token e identificadores do SonarCloud exigem configuração administrativa no GitHub/SonarCloud e não são alterados pelo repositório.
 
 ## Pendências
 
-1. Validar D1-D8 com o docente.
-2. Confirmar manualmente a proteção da branch `main`, `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY`; executar PR remoto para validar o workflow e a análise.
-3. Tornar obrigatórias as metas JaCoCo de 80% de linhas e 70% de branches no Commit 14, após acompanhar a cobertura real.
+1. Registrar a validação formal de D1-D8 com o docente; a implementação observada não substitui essa confirmação acadêmica.
+2. SonarCloud continua sob responsabilidade de outro integrante e depende de configuração e execução remotas confirmadas.
+3. A interface D8 e a validação visual responsiva dependem da integração/revisão do PR #1; sua presença não deve ser inferida em `develop` antes do merge.
