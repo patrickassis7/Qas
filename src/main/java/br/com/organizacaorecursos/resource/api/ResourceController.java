@@ -9,6 +9,7 @@ import br.com.organizacaorecursos.resource.application.ResourceMapper;
 import br.com.organizacaorecursos.resource.application.ResourceService;
 import br.com.organizacaorecursos.resource.domain.ResourceStatus;
 import br.com.organizacaorecursos.resource.domain.ResourceType;
+import br.com.organizacaorecursos.shared.api.PaginationValidator;
 import br.com.organizacaorecursos.shared.infrastructure.web.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -56,6 +57,8 @@ public class ResourceController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
+
+        PaginationValidator.validate(page, size);
 
         ResourceSearchRequest request = new ResourceSearchRequest(
                 type,
