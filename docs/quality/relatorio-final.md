@@ -25,7 +25,7 @@ JaCoCo registrou:
 - Branches: **220/280 — 78,57%**.
 - Os dois indicadores superaram os gates configurados de 80% de linhas e 70% de branches naquela revisão.
 
-Esses números descrevem a revisão/branch do PR #2. A matriz de testes em `docs/quality/plano-de-testes.md` contém resultados de uma execução anterior de 193 testes e 93,52%/77,27%; não use esses valores antigos como resultado mais recente.
+Esses números descrevem a revisão/branch do PR #2. `docs/quality/plano-de-testes.md` preserva os resultados 193 testes e 93,52%/77,27% como histórico do Commit 14 e agora aponta para esta revisão posterior; não use a referência antiga como resultado mais recente.
 
 ## Integração contínua
 
