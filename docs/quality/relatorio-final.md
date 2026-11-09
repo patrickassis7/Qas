@@ -2,22 +2,22 @@
 
 **Data de corte:** 2026-11-09
 
-**Escopo:** evidências disponíveis para Organização de Recursos e estado de integração dos PRs #1 e #2.
+**Escopo:** evidências disponíveis para Organização de Recursos após integração dos PRs #1 e #2; resultados permanecem identificados pela revisão em que foram produzidos.
 
 ## Estado de integração
 
-Este relatório foi criado em `feat/docs-arquitetura-final`, a partir de `origin/develop` em `bb3241ccd6b28a0073a2ee0b44f4fb58a135a0aa`. As evidências mais recentes de frontend e robustez/carga pertencem a branches de feature ainda não integradas:
+Este relatório foi criado em `feat/docs-arquitetura-final`, originalmente a partir de `origin/develop` em `bb3241ccd6b28a0073a2ee0b44f4fb58a135a0aa`. A situação de integração foi atualizada após os merges:
 
 | Entrega | Branch e commit avaliados | Integração em `develop` |
 |---|---|---|
-| Frontend RF-13 — PR #1 | `feat/16-frontend-rf13`, `f37e95854e6964d86ec5606aa9ffc1a6fdc1a0e8` | PR aberto como Draft; frontend e alterações associadas não estão em `develop`. |
-| Segurança, robustez e carga — PR #2 | `feat/15-load-security-robustness`, `3705037666bb39ad0346de7e26fe4955084d13d9` | PR aberto como Draft; correções, testes e evidências desta branch não estão em `develop`. |
+| Frontend RF-13 — PR #1 | Head `f37e95854e6964d86ec5606aa9ffc1a6fdc1a0e8`; merge `8e5fb34` | Integrado em `develop`; branch documental recebeu `origin/develop` no merge `d4b02bb`. |
+| Segurança, robustez e carga — PR #2 | Head `3705037666bb39ad0346de7e26fe4955084d13d9`; merge `87903e1` | Integrado em `develop`; branch documental recebeu `origin/develop` no merge `d4b02bb`. |
 
-As aprovações de CI abaixo se referem somente aos commits indicados. Não representam uma execução do workflow para esta branch de documentação nem um merge dos PRs.
+As aprovações de CI abaixo se referem somente aos heads indicados. Não representam uma execução do workflow para o merge documental `d4b02bb`.
 
 ## Escopo e situação dos requisitos
 
-Esta avaliação consolida evidências documentais e execuções identificadas nas revisões abaixo. Não é uma nova execução de testes nem um aceite global do produto. A [RTM no head do PR #2](https://github.com/patrickassis7/Qas/blob/3705037666bb39ad0346de7e26fe4955084d13d9/docs/RTM.md) é a referência detalhada de testes e requisitos; o quadro resume a situação conhecida em 2026-11-09.
+Esta avaliação consolida evidências documentais e execuções identificadas nas revisões abaixo. Não é um aceite global do produto. A [RTM oficial](../RTM.md) é a referência detalhada de testes e requisitos; o quadro resume a situação conhecida em 2026-11-09.
 
 | Requisito | Situação da evidência | Revisão/fonte principal |
 |---|---|---|
@@ -33,10 +33,10 @@ Esta avaliação consolida evidências documentais e execuções identificadas n
 | RF-10 Histórico auditável | Persistência e consulta administrativa cobertas por testes de integração; evidência não equivale a auditoria independente de segurança. | RTM, PR #2 |
 | RF-11 Notificação simulada | Adaptador HTTP e falhas simuladas cobertos com WireMock na suíte Maven. | RTM, PR #2 |
 | RF-12 Relatório de utilização | Cálculos cobertos por testes de integração; o endpoint também é protegido por perfil. | RTM, PR #2 |
-| RF-13 Interface responsiva e mensagens compreensíveis | Implementação frontend está no PR #1 e o CI desse head passou. A matriz visual dos seis tamanhos ainda não está comprovada; requisito parcialmente evidenciado. | [PR #1](https://github.com/patrickassis7/Qas/pull/1); matriz visual pendente |
+| RF-13 Interface responsiva e mensagens compreensíveis | Implementação frontend integrada pelo PR #1 e CI desse head aprovado. A matriz visual dos seis tamanhos ainda não está comprovada; requisito parcialmente evidenciado. | [PR #1](https://github.com/patrickassis7/Qas/pull/1); matriz visual pendente |
 | RF-14 Documentação de API ou fluxos | README, OpenAPI, RTM e roteiro de demonstração existem; revisão de conteúdo não representa validação operacional de todos os fluxos. | Documentos na branch atual e RTM do PR #2 |
 
-Os resultados de RF-01 a RF-12 acima são evidências associadas à revisão do PR #2, não à `develop` nem a esta branch documental. RF-13 permanece parcial; RF-14 está documentado, mas não é declarado integralmente validado por esta avaliação.
+Os resultados de RF-01 a RF-12 acima foram inicialmente produzidos na revisão do PR #2 e agora estão integrados em `develop` pelo merge `87903e1`; a branch documental recebeu essa revisão em `d4b02bb`. O `clean verify` pós-integração também foi executado em `d4b02bb`. RF-13 permanece parcial; RF-14 está documentado, mas não é declarado integralmente validado por esta avaliação.
 
 ## Estratégia de testes observada
 
@@ -47,13 +47,13 @@ Os resultados de RF-01 a RF-12 acima são evidências associadas à revisão do 
 | API/caixa-preta | MockMvc/TestRestTemplate para status, contratos de erro, autorização, paginação e entradas inválidas. | Não substitui inspeção visual do navegador. |
 | Ponta a ponta | `PublicApiWorkflowEndToEndTest` percorre login, pesquisa, reserva restrita, aprovação, retirada/devolução e consulta de auditoria. | É fluxo HTTP automatizado; não é ensaio de apresentação nem teste visual. |
 | Concorrência/carga | `ReservationConcurrencyIntegrationTest` automatiza concorrência; JMeter 5.6.3 executou consultas e oito reservas simultâneas no ambiente local isolado. | Uma execução local caracteriza somente aquele ambiente e janela. |
-| Interface visual | Frontend está no head do PR #1. | Não há evidência completa para 320, 375, 390, 768, 1024 e 1440 px. |
+| Interface visual | Frontend foi integrado em `develop` no merge `8e5fb34` e está presente em `d4b02bb`. | Não há evidência completa para 320, 375, 390, 768, 1024 e 1440 px. |
 
 Fonte da estratégia e dos critérios: [plano de testes desta branch](plano-de-testes.md), [Story 1.7 no head do PR #2](https://github.com/patrickassis7/Qas/blob/3705037666bb39ad0346de7e26fe4955084d13d9/docs/stories/1.7-commit-15-carga-seguranca-robustez.md) e RTM citada acima.
 
 ## Testes automatizados e cobertura
 
-Na revisão local registrada pela story 1.7 no head do PR #2, `.\mvnw.cmd --batch-mode --no-transfer-progress clean verify` terminou com **BUILD SUCCESS**: 202 testes, zero falhas, zero erros e zero ignorados. PostgreSQL/Testcontainers foi executado. Evidência: [story 1.7 no commit do PR #2](https://github.com/patrickassis7/Qas/blob/3705037666bb39ad0346de7e26fe4955084d13d9/docs/stories/1.7-commit-15-carga-seguranca-robustez.md).
+Na revisão local registrada pela story 1.7 no head do PR #2, `.\mvnw.cmd --batch-mode --no-transfer-progress clean verify` terminou com **BUILD SUCCESS**: 202 testes, zero falhas, zero erros e zero ignorados. Após a integração, o comando foi executado novamente em `d4b02bb` e terminou com **BUILD SUCCESS**, também com 202 testes, zero falhas, zero erros e zero ignorados; PostgreSQL/Testcontainers iniciou e Flyway aplicou as seis migrations. A story 1.7 registra a execução original do PR #2.
 
 JaCoCo registrou:
 
@@ -61,7 +61,7 @@ JaCoCo registrou:
 - Branches: **220/280 — 78,57%**.
 - Os dois indicadores superaram os gates configurados de 80% de linhas e 70% de branches naquela revisão.
 
-Esses números descrevem a revisão/branch do PR #2. `docs/quality/plano-de-testes.md` preserva os resultados 193 testes e 93,52%/77,27% como histórico do Commit 14 e agora aponta para esta revisão posterior; não use a referência antiga como resultado mais recente.
+Os números 93,64%/78,57% foram confirmados também na execução pós-integração de `d4b02bb`. `docs/quality/plano-de-testes.md` preserva 193 testes e 93,52%/77,27% como histórico do Commit 14; esses valores não são o resultado mais recente.
 
 ## Integração contínua
 
@@ -99,10 +99,10 @@ JaCoCo mede linhas e branches executados pela suíte; **não prova ausência de 
 - **SonarCloud:** pendente; responsabilidade de outro integrante. Não há análise ou Quality Gate SonarCloud declarados neste relatório.
 - **Responsividade RF-13:** frontend está no PR #1, mas não existe matriz completa de evidências visuais para 320, 375, 390, 768, 1024 e 1440 px. CI verde e testes de API não provam validação visual nesses tamanhos.
 - **SLO de latência:** não acordado com o docente; percentis e vazão registrados são observações desta execução local, não metas aprovadas.
-- **Integração:** aguardar a revisão/decisão dos PRs #1 e #2. Até então, os resultados associados às respectivas branches não devem ser apresentados como estado já incorporado em `develop`.
+- **Integração:** PRs #1 e #2 foram incorporados em `develop` pelos merges `8e5fb34` e `87903e1`. Os resultados continuam vinculados às revisões e execuções que os produziram; não houve CI nesta branch documental durante esta atualização.
 - **Reprodutibilidade da carga:** os JTL/HTML completos permanecem fora do Git; o repositório contém somente métricas agregadas e hashes sanitizados.
 - **Riscos residuais:** a revisão de autorização e erros cobre os cenários listados na story/RTM, mas não é auditoria de segurança independente; a execução JMeter é única e local; a interface ainda não tem matriz visual completa; notificações são simuladas/configuráveis e sua entrega externa não foi demonstrada aqui. O registro de defeitos diferencia itens corrigidos dos riscos ainda abertos.
 
 ## Síntese — sem aprovação global
 
-As evidências mostram suíte Maven aprovada com 202 testes e JaCoCo acima dos limites configurados na revisão do PR #2, CI `verify` verde nos heads consultados dos PRs #1 e #2, e uma execução JMeter com uma reserva aceita e sete conflitos esperados, sem HTTP 500 nem reserva órfã. Este relatório **não declara a qualidade final aprovada**: a integração dos PRs, SonarCloud, a matriz visual responsiva e o acordo de SLO permanecem pendentes.
+As evidências mostram suíte Maven aprovada com 202 testes e JaCoCo acima dos limites configurados na revisão do PR #2 e em nova execução no merge documental `d4b02bb`, CI `verify` verde nos heads consultados dos PRs #1 e #2, e uma execução JMeter com uma reserva aceita e sete conflitos esperados, sem HTTP 500 nem reserva órfã. Este relatório **não declara a qualidade final aprovada**: SonarCloud, a matriz visual responsiva e o acordo de SLO permanecem pendentes.

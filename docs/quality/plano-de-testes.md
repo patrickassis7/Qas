@@ -2,7 +2,7 @@
 
 ## Objetivo e escopo
 
-Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras RN-01 a RN-08, preservando os contratos do produto. O mapeamento requisito → risco → teste → evidência está em [`docs/RTM.md`](../RTM.md). A execução de 193 testes descrita adiante é uma referência histórica do Commit 14. A revisão posterior registrada no PR #2 (`feat/15-load-security-robustness`, head `3705037`) executou `./mvnw.cmd --batch-mode --no-transfer-progress clean verify` com 202 testes, zero falhas, erros ou ignorados e JaCoCo de 93,64% de linhas e 78,57% de branches. O resultado mais recente pertence à branch de feature e ainda não está integrado em `develop`; consulte o [relatório final de qualidade](relatorio-final.md) e a [story 1.7 no head do PR #2](https://github.com/patrickassis7/Qas/blob/3705037666bb39ad0346de7e26fe4955084d13d9/docs/stories/1.7-commit-15-carga-seguranca-robustez.md).
+Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras RN-01 a RN-08, preservando os contratos do produto. O mapeamento requisito → risco → teste → evidência está na [RTM oficial](../RTM.md). A execução de 193 testes descrita adiante é referência histórica do Commit 14. A revisão do PR #2 (head `3705037`) registrou 202 testes e JaCoCo 93,64% linhas/78,57% branches; PR #2 foi integrado por `87903e1`, e PR #1 por `8e5fb34`. Após a integração, `clean verify` foi executado novamente na branch documental em `d4b02bb`, com 202 testes, 0 falhas, 0 erros, 0 ignorados e os mesmos percentuais de JaCoCo. Consulte o [relatório final de qualidade](relatorio-final.md), a [story 1.7](../stories/1.7-commit-15-carga-seguranca-robustez.md) e a [matriz oficial](../RTM.md).
 
 ## Estratégia por camada
 
@@ -56,8 +56,8 @@ SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGAN
 ## Limitações desta revisão
 
 - Histórico do Commit 14: 193/193 testes aprovados, com 93,52% de linhas e 77,27% de branches. Esses dados permanecem apenas como referência daquela revisão.
-- Evidência mais recente disponível nesta documentação: PR #2, head `3705037`, 202/202 testes aprovados e JaCoCo 93,64%/78,57%; execução local registrada na story 1.7 e no relatório final. Não atribuir esse resultado a `develop` antes da integração do PR.
+- Evidência da revisão do PR #2: head `3705037`, 202/202 testes e JaCoCo 93,64%/78,57%, documentados na story 1.7. PR #2 foi integrado em `develop` por `87903e1`. A execução pós-integração desta branch documental em `d4b02bb` também passou com 202/202 e JaCoCo 93,64%/78,57%.
 - O workflow `CI` e o job `verify` foram observados em sucesso nos heads consultados dos PRs #1 e #2; os links e SHAs estão no [relatório final](relatorio-final.md). Esta branch de documentação não teve CI executado durante a atualização deste arquivo.
-- Frontend disponível na branch do PR #1, mas sem matriz completa de inspeção visual responsiva; RF-13 permanece parcialmente pendente.
+- Frontend integrado em `develop` pelo merge `8e5fb34`, mas sem matriz completa de inspeção visual responsiva; RF-13 permanece parcialmente pendente.
 - SonarCloud não foi executado e permanece sob responsabilidade do integrante designado.
-- A revisão humana da RTM está registrada em `docs/RTM.md` para a revisão correspondente; reconciliar a matriz após o PR #2.
+- A reconciliação da RTM foi concluída em `docs/RTM.md`; o README será alinhado em uma entrega documental separada.
