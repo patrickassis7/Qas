@@ -92,6 +92,24 @@ class ResourceValidatorTest {
                         null
                 ),
                 new CreateResourceRequest(
+                        ResourceType.SALA,
+                        "Sala 101",
+                        "Bloco A",
+                        0,
+                        null,
+                        false,
+                        null
+                ),
+                new CreateResourceRequest(
+                        ResourceType.SALA,
+                        "Sala 101",
+                        "Bloco A",
+                        -1,
+                        null,
+                        false,
+                        null
+                ),
+                new CreateResourceRequest(
                         ResourceType.PROFESSOR,
                         "João Silva",
                         null,

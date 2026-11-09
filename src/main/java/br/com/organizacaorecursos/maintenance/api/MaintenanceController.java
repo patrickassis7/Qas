@@ -4,9 +4,11 @@ import br.com.organizacaorecursos.maintenance.api.dto.CreateMaintenanceBlockRequ
 import br.com.organizacaorecursos.maintenance.api.dto.MaintenanceBlockResponse;
 import br.com.organizacaorecursos.maintenance.application.MaintenanceMapper;
 import br.com.organizacaorecursos.maintenance.application.MaintenanceService;
+import br.com.organizacaorecursos.shared.infrastructure.web.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,10 +39,11 @@ public class MaintenanceController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public MaintenanceBlockResponse create(
+            Authentication authentication,
             @Valid @RequestBody CreateMaintenanceBlockRequest request
     ) {
         return maintenanceMapper.toResponse(
-                maintenanceService.create(request)
+                maintenanceService.create(CurrentUser.id(authentication), request)
         );
     }
 
@@ -58,7 +61,7 @@ public class MaintenanceController {
     @PostMapping("/{id}/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public void cancel(@PathVariable UUID id) {
-        maintenanceService.cancel(id);
+    public void cancel(Authentication authentication, @PathVariable UUID id) {
+        maintenanceService.cancel(id, CurrentUser.id(authentication));
     }
 }

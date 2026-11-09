@@ -1,5 +1,6 @@
 package br.com.organizacaorecursos.resource.application;
 
+import br.com.organizacaorecursos.audit.application.AuditService;
 import br.com.organizacaorecursos.auth.domain.UserEntity;
 import br.com.organizacaorecursos.auth.infrastructure.UserRepository;
 import br.com.organizacaorecursos.reservation.application.AgendaConflictChecker;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -28,17 +30,20 @@ public class ResourceService {
     private final UserRepository userRepository;
     private final ResourceValidator resourceValidator;
     private final AgendaConflictChecker agendaConflictChecker;
+        private final AuditService auditService;
 
     public ResourceService(
             ResourceRepository resourceRepository,
             UserRepository userRepository,
             ResourceValidator resourceValidator,
-            AgendaConflictChecker agendaConflictChecker
+            AgendaConflictChecker agendaConflictChecker,
+            AuditService auditService
     ) {
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.resourceValidator = resourceValidator;
         this.agendaConflictChecker = agendaConflictChecker;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -84,7 +89,7 @@ public class ResourceService {
                 .toList();
     }
 
-    public ResourceEntity create(CreateResourceRequest request) {
+        public ResourceEntity create(UUID actorId, CreateResourceRequest request) {
 
         resourceValidator.validate(request);
 
@@ -114,10 +119,12 @@ public class ResourceService {
                 responsible
         );
 
-        return resourceRepository.save(resource);
+                ResourceEntity saved = resourceRepository.save(resource);
+                auditService.registrar(actorId, "RECURSO_CRIADO", "RESOURCE", saved.getId(), details(saved));
+                return saved;
     }
 
-    public ResourceEntity update(UUID id, UpdateResourceRequest request) {
+        public ResourceEntity update(UUID id, UUID actorId, UpdateResourceRequest request) {
 
         resourceValidator.validate(
                 new CreateResourceRequest(
@@ -161,14 +168,25 @@ public class ResourceService {
                 responsible
         );
 
-        return resourceRepository.save(resource);
+                ResourceEntity saved = resourceRepository.save(resource);
+                auditService.registrar(actorId, "RECURSO_ATUALIZADO", "RESOURCE", saved.getId(), details(saved));
+                return saved;
     }
 
-    public void deactivate(UUID id) {
+        public void deactivate(UUID id, UUID actorId) {
         ResourceEntity resource = findById(id);
 
         resource.deactivate();
 
         resourceRepository.save(resource);
+        auditService.registrar(actorId, "RECURSO_DESATIVADO", "RESOURCE", resource.getId(), details(resource));
+    }
+
+    private static Map<String, Object> details(ResourceEntity resource) {
+        return Map.of(
+                "type", resource.getType().name(),
+                "name", resource.getName(),
+                "status", resource.getStatus().name()
+        );
     }
 }

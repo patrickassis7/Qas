@@ -9,12 +9,14 @@ import br.com.organizacaorecursos.resource.application.ResourceMapper;
 import br.com.organizacaorecursos.resource.application.ResourceService;
 import br.com.organizacaorecursos.resource.domain.ResourceStatus;
 import br.com.organizacaorecursos.resource.domain.ResourceType;
+import br.com.organizacaorecursos.shared.infrastructure.web.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,7 +47,6 @@ public class ResourceController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public Page<ResourceResponse> search(
             @RequestParam(required = false) ResourceType type,
             @RequestParam(required = false) String location,
@@ -74,7 +75,6 @@ public class ResourceController {
     }
 
     @GetMapping("/availability")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public List<ResourceAvailabilityResponse> availability(
             @RequestParam(required = false) Instant startAt,
             @RequestParam(required = false) Instant endAt
@@ -87,7 +87,6 @@ public class ResourceController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResourceResponse findById(@PathVariable UUID id) {
         return resourceMapper.toResponse(
                 resourceService.findById(id)
@@ -98,28 +97,30 @@ public class ResourceController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResourceResponse create(
+            Authentication authentication,
             @Valid @RequestBody CreateResourceRequest request
     ) {
         return resourceMapper.toResponse(
-                resourceService.create(request)
+                resourceService.create(CurrentUser.id(authentication), request)
         );
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResourceResponse update(
+            Authentication authentication,
             @PathVariable UUID id,
             @Valid @RequestBody UpdateResourceRequest request
     ) {
         return resourceMapper.toResponse(
-                resourceService.update(id, request)
+                resourceService.update(id, CurrentUser.id(authentication), request)
         );
     }
 
     @PostMapping("/{id}/deactivate")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasRole('ADMINISTRADOR')")
-    public void deactivate(@PathVariable UUID id) {
-        resourceService.deactivate(id);
+        public void deactivate(Authentication authentication, @PathVariable UUID id) {
+                resourceService.deactivate(id, CurrentUser.id(authentication));
     }
 }

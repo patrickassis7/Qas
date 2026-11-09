@@ -1,0 +1,34 @@
+schema: 1
+story: '1.5'
+gate: FAIL
+status_reason: 'Acceptance criteria requiring final verification and human review remain unproven; the story cannot be approved based on static inspection alone.'
+reviewer: Quinn
+reviewed_revision: 'commit:212816b; reviewed staged and unstaged working-tree diff'
+updated: '2026-11-09T01:11:50Z'
+top_issues:
+  - id: TEST-001
+    severity: high
+    finding: 'The final Maven verification and the added or changed tests have not been executed; AC 2, AC 3, and AC 7 have no final execution evidence.'
+    suggested_action: 'After execution is authorized, run the full Maven verification and record its result and reports before requesting QA again.'
+  - id: TEST-002
+    severity: high
+    finding: 'JaCoCo thresholds are present in pom.xml and CI invokes clean verify, but there is no evidence that the gate fails below either threshold and succeeds when both thresholds are met.'
+    suggested_action: 'Demonstrate and preserve evidence for both below-threshold failure and above-threshold success.'
+  - id: TEST-003
+    severity: medium
+    finding: 'DEF-006 and DEF-007 are marked corrected, but their final retests remain pending.'
+    suggested_action: 'Retest both corrections and update docs/quality/defects.md with observable results.'
+  - id: REQ-001
+    severity: medium
+    finding: 'The RTM has no explicit human review record; AC 10 is not met.'
+    suggested_action: 'Obtain a human review and record reviewer, date, and outcome in the designated review record.'
+  - id: DOC-001
+    severity: medium
+    finding: 'SonarCloud was not executed, and the current artifacts do not evidence an operational analysis.'
+    suggested_action: 'Record whether SonarCloud is operational; if it is, attach the analysis result, otherwise retain the documented pending reason.'
+  - id: REQ-002
+    severity: medium
+    finding: 'RF-13 visual responsiveness remains unverified because no inspectable UI is available; API tests do not establish visual behavior.'
+    suggested_action: 'Keep RF-13 pending until a UI is available and visual/responsive evidence can be reviewed.'
+waiver:
+  active: false

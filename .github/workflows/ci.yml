@@ -27,7 +27,7 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Run Maven verification and generate JaCoCo reports
+      - name: Run Maven verification, JaCoCo gate and reports
         run: |
           chmod +x ./mvnw
           ./mvnw --batch-mode --no-transfer-progress clean verify
