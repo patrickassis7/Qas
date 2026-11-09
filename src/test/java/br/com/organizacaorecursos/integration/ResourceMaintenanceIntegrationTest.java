@@ -47,13 +47,19 @@ class ResourceMaintenanceIntegrationTest extends PostgresIntegrationTestSupport 
 
     private UserEntity admin;
     private UserEntity responsible;
+    private UserEntity requester;
     private String adminToken;
+    private String responsibleToken;
+    private String requesterToken;
 
     @BeforeEach
     void fixtures() throws Exception {
         admin = user("ADMINISTRADOR");
         responsible = user("RESPONSAVEL");
+        requester = user("SOLICITANTE");
         adminToken = login(admin);
+        responsibleToken = login(responsible);
+        requesterToken = login(requester);
     }
 
     @Test
@@ -111,6 +117,44 @@ class ResourceMaintenanceIntegrationTest extends PostgresIntegrationTestSupport 
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("INATIVO"));
+    }
+
+    @Test
+    void onlyAdministratorCanCreateUpdateOrDeactivateResources() throws Exception {
+        String resourceId = createResource(ResourceType.SALA, "Sala protegida", "Campus Norte", 24,
+                "Physics", false, null);
+        int resourceCount = jdbc.queryForObject("select count(*) from resources", Integer.class);
+        Map<String, Object> update = resourceBody(ResourceType.SALA, "Sala alterada indevidamente",
+                "Campus Sul", 30, "Chemistry", false, null);
+        Map<String, Object> create = resourceBody(ResourceType.SALA, "Recurso não autorizado",
+                "Campus Sul", 20, "Chemistry", false, null);
+
+        for (String token : new String[]{requesterToken, responsibleToken}) {
+            assertForbidden(mvc.perform(post("/api/v1/resources")
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(create))));
+            assertForbidden(mvc.perform(patch("/api/v1/resources/" + resourceId)
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(mapper.writeValueAsString(update))));
+            assertForbidden(mvc.perform(post("/api/v1/resources/" + resourceId + "/deactivate")
+                    .header("Authorization", "Bearer " + token)));
+        }
+
+        mvc.perform(get("/api/v1/resources/" + resourceId).header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Sala protegida"))
+                .andExpect(jsonPath("$.status").value("ATIVO"));
+        assertThat(jdbc.queryForObject("select count(*) from resources", Integer.class)).isEqualTo(resourceCount);
+    }
+
+    private static void assertForbidden(org.springframework.test.web.servlet.ResultActions action) throws Exception {
+        action.andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("FORBIDDEN"))
+                .andExpect(jsonPath("$.message").value("Acesso não permitido para seu perfil."))
+                .andExpect(jsonPath("$.fieldErrors").isArray())
+                .andExpect(jsonPath("$.traceId").isNotEmpty());
     }
 
     @Test
