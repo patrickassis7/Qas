@@ -214,6 +214,16 @@ As transições de aprovação, rejeição e cancelamento (incluindo aprovação
 
 Erros de autenticação e autorização usam `code`, `message`, `fieldErrors` e `traceId` em português, sem expor hash ou token. A aplicação recusa iniciar sem `JWT_SECRET`.
 
+## Interface web (Commit 16 / RF-13)
+
+Com PostgreSQL em execução e a aplicação iniciada pelo comando PowerShell acima, abra **http://localhost:8080/**. A interface é servida pelo próprio Spring Boot, não requer Node.js, servidor separado ou bibliotecas JavaScript externas. Use as mesmas credenciais locais cadastradas na primeira inicialização do perfil `local`.
+
+A tela inicial oferece consulta de recursos, verificação de disponibilidade por período, criação e acompanhamento das reservas. Administradores também podem cadastrar, atualizar e desativar recursos; administradores e responsáveis podem enviar ações de aprovação e operação para reservas permitidas pelo backend. O token fica somente no `sessionStorage` da aba e é removido ao sair ou quando a API retorna 401.
+
+A API não fornece endpoint de perfil nem fila de aprovações para responsáveis. A interface identifica capacidades consultando os endpoints já protegidos de auditoria e relatório; responsáveis precisam conhecer o UUID da reserva para iniciar uma ação. A gestão de recurso aceita o UUID do responsável porque não existe endpoint de consulta de usuários. O backend permanece responsável pela autorização final. Erros de conflito (409), acesso (401/403), validação (400) e falhas de servidor são exibidos com a mensagem retornada pela API; dados da API são inseridos como texto.
+
+Para encerrar a aplicação, pressione `Ctrl+C` no terminal da execução. O CSS e JavaScript não dependem de serviços de terceiros.
+
 ## CI e qualidade (Commit 04)
 
 O workflow `.github/workflows/ci.yml` executa em Pull Requests direcionados a `main` ou `develop`, usando Java 21 Temurin, cache Maven e `./mvnw clean verify`. Os testes de integração iniciam PostgreSQL real via Testcontainers; o runner hospedado do GitHub fornece Docker. O wrapper recebe permissão de execução no runner antes do uso.

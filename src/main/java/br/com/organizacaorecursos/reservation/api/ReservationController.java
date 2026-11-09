@@ -4,6 +4,7 @@ import br.com.organizacaorecursos.reservation.api.dto.CreateReservationRequest;
 import br.com.organizacaorecursos.reservation.api.dto.ReservationResponse;
 import br.com.organizacaorecursos.reservation.api.dto.UpdateReservationRequest;
 import br.com.organizacaorecursos.reservation.application.ReservationService;
+import br.com.organizacaorecursos.shared.api.PaginationValidator;
 import br.com.organizacaorecursos.shared.infrastructure.web.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -46,6 +47,7 @@ public class ReservationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
+        PaginationValidator.validate(page, size);
         return reservationService.list(userId(authentication), isAdmin(authentication), page, size);
     }
 
