@@ -1,14 +1,14 @@
 # Proposta revisada: gate AIOX para projetos Maven e multi-stack
 
-**Estado:** candidata consolidada para nova revisão de `@architect` e `@po`; não aprovada nem implementada
+**Estado:** revisão 10, candidata após revisão direcionada; não aprovada nem implementada
 
-**Revisão da proposta:** 2, em 2026-11-09. Esta atualização incorpora recomendações para resolver objeções anteriores; não substitui os pareceres dos revisores nem registra consenso.
+**Revisão da proposta:** 10, em 2026-11-09. Incorpora direcionamentos do solicitante e uma POC limitada de Git blobs; não substitui pareceres, consenso ou aprovação humana e não registra política aprovada.
 
 **Projeto de referência:** Organização de Recursos (Java 21, Spring Boot, Maven, frontend estático)
 
-**Branch/HEAD de referência:** `feat/rf13-responsive-overflow` / `94f1b6e`
+**Branch/HEAD de referência:** `feat/rf13-responsive-overflow` / `89d3c66`
 
-**Commits locais preservados:** `ded9437`, `94f1b6e`
+**Commits locais preservados:** `ded9437`, `94f1b6e`, `89d3c66` (este último documenta o handoff e torna rastreados os documentos locais de requisitos e esta proposta)
 
 ## 1. Decisão solicitada
 
@@ -29,6 +29,10 @@ Este repositório tem `pom.xml`, Maven Wrapper e assets HTML/CSS/JavaScript, mas
 - Scanner AIOX anteriormente executado: 1.094 arquivos no escopo padrão e 0 ocorrências. Não foi reexecutado nesta revisão da proposta.
 - Esses dados não foram recalculados agora e não constituem aprovação de política.
 
+### Evidência adicional desta retomada
+
+Em 2026-11-09, o módulo `.aiox-core/core/security/port-denylist.js` foi chamado diretamente com o diretório do repositório e raízes padrão. Resumo redigido do resultado: `ok=true`, 1.094 arquivos examinados, 0 findings. O scanner deliberadamente cobre as superfícies AIOX configuradas; não examina `src/main/java` nem `src/main/resources/static`, portanto este resultado não comprova segurança completa do produto nem substitui secret scanning, SCA, SAST ou CodeRabbit. O comando npm da tarefa não foi repetido nesta retomada; sua incompatibilidade com este Maven permanece documentada na evidência anterior.
+
 ### 2.1 Objeções anteriores e cobertura nesta candidata
 
 O quadro reproduz as objeções informadas pelo solicitante a partir do histórico anterior; não são pareceres novos nem respostas oficiais dos revisores.
@@ -36,26 +40,34 @@ O quadro reproduz as objeções informadas pelo solicitante a partir do históri
 | Revisor de origem | Objeção anterior | Tratamento nesta candidata | Situação |
 |---|---|---|---|
 | `@architect` | Precedência BLOCK/WARN e versão constitucional | Propõe BLOCK para todo MUST aplicável e Constitution 1.2.0/MINOR | Proposta clara; requer consenso |
-| `@architect` e `@po` | Cobertura JaCoCo multimódulo | Define relatório agregado do reactor e prova de inclusão de todos os módulos com produção | Regra candidata; requer aceite |
+| @architect e @po | Cobertura JaCoCo multimódulo | Revisão 10 mantém suporte multimódulo fora do escopo mínimo; POM com modules bloqueia. Suporte futuro exige decisão, story e POC específica | Tratamento atual proposto; não há regra universal agregada |
 | `@architect` e `@po` | Integridade/checksums do Maven Wrapper | Exige Wrapper, URL HTTPS, versão e checksums do Wrapper JAR e distribuição; falha fechado | Regra candidata; implementação precisa de testes |
 | `@architect` | CodeRabbit no range/SHA exatos | Mantém CLI pre-push; exige base/head SHA, range completo e invalida resultado obsoleto | Capacidade da CLI ainda precisa de POC |
-| `@architect` e `@po` | HIGH, timeout, falta de autenticação, erro e resultado inválido | Recomenda CRITICAL/HIGH bloqueantes; falhas operacionais e SHA divergente ficam BLOCKED | Semântica proposta; severity/waiver requer consenso |
+| @architect e @po | HIGH, timeout, falta de autenticação, erro e resultado inválido | CRITICAL bloqueia conforme regra vigente; HIGH conserva semântica atual por enquanto; falha operacional/SHA inválido fica BLOCKED. Endurecer HIGH é decisão separada D14 | Regra candidata coerente com adaptação mínima; segurança de execução continua a validar |
 | `@architect` e `@po` | Ferramentas/versões de segurança e critérios de aceite | Registra candidatos e versões para SCA, SAST, segredo, JS e CSS; exige POCs, fixtures e pins | Parcial; compatibilidade e rulesets não confirmados |
 | `@architect` | Arquivos locais, ignorados e binários | Não ler/enviar não rastreados automaticamente; rastreados no range entram no scan; binário obrigatório não analisável bloqueia | Regra candidata; requer consenso sobre working tree |
-| `@po` | Falsos positivos, waivers e indisponibilidade | Waiver estreito com finding, responsável, prazo; ferramenta indisponível nunca PASS/N/A | Regra candidata; política de exceção precisa de aprovação |
+| @po | Falsos positivos, waivers e indisponibilidade | Check obrigatório indisponível nunca PASS/N/A; waiver de gate obrigatório é proibido pela regra atual e só poderia ser criado por emenda constitucional explícita | Política de waiver não habilitada |
 | `@po` | Evidência obrigatória por SHA | Relatório inclui base/head, comandos, versões, estados, resultados, métricas e links de artefatos | Regra candidata; formato/retention devem ser aprovados |
 | `@po` | Cenários de aceite redundantes | Consolida combinações de stack, falhas, segurança, CodeRabbit, Git e SHA em uma única matriz | Consolidado nesta revisão |
+
+### 2.2 Pareceres advisory da rodada 3 (2026-11-09)
+
+Os agentes disponíveis `@architect` e `@po` emitiram pareceres **favoráveis com condições** sobre a revisão anterior desta candidata. Eles não alteraram a proposta nem a política; o mecanismo oficial de greeting AIOX não iniciou porque o ambiente não contém `js-yaml`. Os pareceres apontaram: perfil de assets estáticos independente de Node; mecânica comprovável de JaCoCo multimódulo; scanner denylist que não leia untracked do filesystem; separação entre adaptação Maven mínima e endurecimento HIGH do CodeRabbit; status RF-13 sem transição cosmética; e associação completa do conjunto/range ao SHA. Esta revisão 4 incorpora esses pontos para uma segunda revisão; ainda não é consenso.
+
+### 2.3 Pareceres advisory da revisão 4 (2026-11-09)
+
+`@architect` e `@po` voltaram a ser **favoráveis com condições**, sem consenso. `@architect` considerou resolvidos no desenho os perfis de assets, denylist por blobs, divisão CRITICAL/HIGH e proteção de SHA; ainda exige POC multimódulo, CLI CodeRabbit para committed range e fixture untracked que produza finding real. `@po` considerou resolvidos perfil de assets, divisão de severidades e associação ao SHA; ainda exige decisão do status `Review`, bootstrap CodeRabbit concreto, autoridade de waivers e propagação explícita a `AGENTS.md`. A revisão 5 responde a esses pontos como proposta; nenhum mecanismo novo foi implementado.
 
 ## 3. Perfil por stack proposto
 
 ### 3.1 Detecção e seleção
 
 1. Detectar Maven por `pom.xml`; exigir `mvnw`, `mvnw.cmd` e arquivos necessários em `.mvn/wrapper/`. O Wrapper é o executor canônico. Verificar URLs/versões explícitas, checksum do wrapper JAR e `distributionSha256Sum` da distribuição. Ausência, corrupção ou divergência bloqueia; não recorrer silenciosamente ao Maven global.
-2. Detectar Node apenas por manifestos reais de projeto (`package.json` com scripts ou configuração Node reconhecida), nunca criar manifesto fictício para satisfazer o gate.
-3. Projeto Java/Maven puro executa Maven e controles gerais; checks exclusivos de Node ficam N/A com a razão e evidência “nenhum pacote Node declarado”.
-4. Projeto Node executa seus scripts e controles Node; Maven não é invocado se não existir projeto Maven.
-5. Projeto misto executa ambos os perfis identificados. Um componente não anula o outro.
-6. Maven multimódulo executa o Wrapper na raiz do reactor. Recomenda-se aplicar 80%/70% ao relatório agregado do reactor; o relatório deve demonstrar que todos os módulos com código de produção estão incluídos. Módulo de produção omitido, relatório incompleto ou denominador incompatível bloqueia. Esta proposta não adiciona limite independente por módulo: o agregado é a regra única para evitar requisitos divergentes.
+2. Detectar pacote Node apenas por manifesto/configuração real. Nunca criar `package.json` fictício para satisfazer o gate.
+3. Detectar **assets estáticos** em perfil próprio, independente de pacote Node: arquivos `.html`, `.css` e `.js` sob raízes de produto configuradas (neste projeto, `src/main/resources/static/`). O relatório registra arquivos encontrados e a regra de detecção. Ausência de `package.json` torna N/A somente os checks de pacote/dependências Node; não torna N/A a validação dos assets existentes.
+4. Perfil Maven executa o Wrapper, testes, JaCoCo e controles Maven aprovados. Perfil Node executa scripts e controles Node declarados. Perfil de assets estáticos aplica verificações sobre os arquivos HTML/CSS/JS, sem exigir inventar manifesto npm. Um repositório misto executa todos os perfis detectados.
+5. Para JavaScript estático, `node --check` é o check de sintaxe já disponível no projeto; ele não é lint nem SAST. Lint/SAST de JS e validação de HTML/CSS serão obrigatórios somente após ferramenta, versão, configuração e regras serem aprovadas e testadas. Até a decisão, a implementação do perfil não pode marcar tais objetivos como PASS/N/A se forem obrigatórios pela política vigente: o estado é BLOCKED.
+6. Qas é atualmente single-module. Suporte a Maven multimódulo fica fora desta adaptação mínima: detectar POM com módulos e bloquear com instrução para política/story específica, sem executar cobertura agregada como PASS. Se o escopo futuro incluir multimódulo, aprovar se a meta 80% linhas/70% branches será agregada ou por módulo e executar a POC JaCoCo descrita no cenário correspondente antes de ativar o perfil.
 7. Execução a partir de subdiretório localiza a raiz por regra determinística. Descritores conflitantes/ambíguos, `pom.xml` inválido, Wrapper ausente/corrompido ou stack não reconhecida provocam falha explícita; não há seleção silenciosa.
 
 ### 3.2 Build, testes e JaCoCo
@@ -78,18 +90,18 @@ Falha de compilação, teste, migration, cobertura ou scanner do código é clas
 
 ## 4. Controles de segurança por stack
 
-Os controles abaixo preservam os objetivos da tarefa atual. Ferramentas e versões são **candidatas para avaliação**, não equivalências já aprovadas. Antes da implementação, revisores devem aprovar ferramenta, versão/digest, limiar, escopo, armazenamento de dados, comportamento sem rede e código de saída. Atualizar a versão no momento da implementação exige nova validação; versão de referência não é pin final.
+Os controles abaixo preservam os objetivos da tarefa atual. Ferramentas e versões são **candidatas para avaliação**, não equivalências já aprovadas. A adaptação mínima não instala scanners novos nem os declara aprovados por aparecerem nesta tabela. Antes de substituir ou ampliar um controle, revisores e responsáveis aprovam ferramenta, versão/digest, limiar, escopo, privacidade/armazenamento de dados, comportamento sem rede e código de saída; uma POC com fixtures demonstra o objetivo de controle. Até isso ocorrer, check de segurança atualmente obrigatório sem execução equivalente permanece BLOCKED. Atualizar a versão no momento da implementação exige nova validação; versão de referência não é pin final.
 
 | Objetivo | Proposta Maven/produto | Limites e condição de gate |
 |---|---|---|
 | Segredos | Recomenda-se Gitleaks CLI `8.30.1` como candidata, fixada por release verificada e checksum; antes da adoção, executar fixtures sintéticas positivas/negativas para comprovar o comportamento do digest escolhido. Secretlint permanece alternativa a deliberar, não fallback automático. | Finding confirmado bloqueia. Falha/indisponibilidade bloqueia. Logs mostram regra e caminho/linha, nunca segredo ou excerpt. Falso positivo requer exceção estreita, revisão, responsável e expiração. |
 | CVEs em dependências Java | Recomenda-se avaliar OWASP Dependency-Check Maven Plugin `13.0.0`, com cache NVD e versão fixada após teste de compatibilidade. | Proposta de limiar: Critical e High (CVSS >= 7.0 quando houver score CVSS confiável) bloqueiam; Medium/Low são reportados como WARN/INFO; findings sem score ficam em triagem bloqueante até classificação. Feed ausente/desatualizado ou relatório inválido bloqueia ambientalmente. Waiver fica ligado ao CVE, componente/versão, justificativa, responsável e prazo. SCA não detecta vulnerabilidades desconhecidas nem substitui SAST. |
-| SAST Java | Recomenda-se avaliar SpotBugs Maven Plugin `4.10.5.0` com Find Security Bugs `1.14.0`, fixados e validados em conjunto com Java 21, Maven Wrapper e Spring Boot 3.4.5. | Proposta de limiar: findings de severidade alta/crítica e confiança suficiente bloqueiam; demais são reportados para triagem. Falta de classes, erro do plugin ou relatório ausente bloqueia. Compatibility POC é requisito antes da aprovação; não presumir compatibilidade apenas porque as versões são recentes. |
+| SAST Java | SpotBugs Maven Plugin + Find Security Bugs permanecem candidatos a POC em Java 21, Wrapper e Spring Boot 3.4.5; versões e ruleset não são aprovados por esta proposta. | Não há mapeamento de severidade adotado ainda. POC deve usar fixtures e a equipe deve aprovar uma tabela objetiva de severidade/confiança e waivers antes de tornar o scanner gate. Erro, classes ausentes ou relatório inválido bloqueiam se o check estiver aprovado como obrigatório. |
 | JavaScript frontend | `node --check` para sintaxe; Semgrep CLI `1.182.0` como candidato SAST, com ruleset versionado por referência imutável. ESLint `10.14.0` é candidato a lint somente com config e dependências de desenvolvimento reais, nunca script fictício. Node `24.11.0` é candidato por ser a versão observada no ambiente da auditoria anterior; confirmar patch suportado no momento da implementação e fixá-lo. | `node --check` não equivale a lint nem SAST. Falha ou ausência de check aprovado obrigatório bloqueia. Semgrep community/configuração e regras precisam de POC e análise de false positives antes da adoção. |
 | HTML e CSS frontend | Nu Html Checker em artefato com checksum fixado. Stylelint `18.0.0` é candidato a lint CSS, condicionado a config, compatibilidade do runtime Node e execução reprodutível. | Validação estrutural/estilo não é SAST. Não usar tag móvel `latest` sem digest; erros segundo política aprovada bloqueiam. Não enviar conteúdo do projeto a serviço remoto sem autorização. |
 | Port denylist AIOX | Executar o scanner AIOX existente diretamente, conforme seção 5. | Continua bloqueante dentro do seu escopo; não conta como SAST Java/HTML/CSS. |
 
-**Semântica de indisponibilidade:** todo check obrigatório aplicável que não executa, não consegue ler seu input ou não produz relatório verificável é `BLOCKED`, nunca `PASS` nem `N/A`. Falha de código/configuração e bloqueio ambiental são estados distintos; ambos bloqueiam. `N/A` só é permitido quando a stack/artefato não existe e a justificativa aparece no relatório. Findings só podem ser dispensados por waiver formal, específico, versionado, com responsável, justificativa e validade; ferramenta ausente nunca é waiver.
+**Semântica de indisponibilidade:** todo check obrigatório aplicável que não executa, não consegue ler seu input ou não produz relatório verificável é `BLOCKED`, nunca `PASS` nem `N/A`. Falha de código/configuração e bloqueio ambiental são estados distintos; ambos bloqueiam. `N/A` só é permitido quando a stack/artefato não existe e a justificativa aparece no relatório. Findings só podem ser dispensados por waiver formal, específico, versionado, com responsável, justificativa, aprovador e validade; ferramenta ausente nunca é waiver. Quando thresholds ainda não foram aprovados, a proposta não inventa uma severidade: a implementação do gate aguarda decisão, e a ausência de política/check não produz PASS.
 
 O workflow Node existente mantém seus controles próprios. A migração para Maven não pode converter `npm audit`, ESLint ou secret detection em PASS/N/A sem mapear o objetivo de segurança correspondente. N/A só é legítimo quando a tecnologia/artefato não existe e a justificativa fica no relatório. “Não executado”, “indisponível”, “falhou” e “N/A” são estados distintos; os três primeiros não podem ser resumidos como PASS.
 
@@ -107,20 +119,25 @@ Essas ferramentas têm propósitos e limites diferentes. Não são equivalentes 
 
 ## 5. Port denylist
 
-Manter o scanner real `.aiox-core/core/security/port-denylist.js` e seus findings/erros de leitura como bloqueantes. O módulo exporta `scanProject`; o exemplo de chamada direta abaixo evita script npm inventado e omite excerpts da saída:
+Manter os mesmos padrões do scanner real `.aiox-core/core/security/port-denylist.js` como bloqueantes. **Não chamar `scanProject({ projectRoot })` no workspace como gate de publicação:** a função percorre o filesystem e pode ler arquivo não rastreado dentro das raízes. O scanner exporta `scanContent`; a proposta é adicionar um adaptador pequeno que lê somente blobs Git rastreados no `headSha` avaliado e submete os conteúdos a essa função:
 
 ```js
-const { scanProject } = require('./.aiox-core/core/security/port-denylist');
-const result = scanProject({ projectRoot: process.cwd() });
-console.log(JSON.stringify({
-  ok: result.ok,
-  filesScanned: result.filesScanned,
-  findings: result.findings.map(({ file, id, description, line }) => ({ file, id, description, line }))
-}, null, 2));
-if (!result.ok) process.exitCode = 1;
+const { execFileSync } = require('node:child_process');
+const { scanContent, DEFAULT_SCAN_ROOTS } = require('./.aiox-core/core/security/port-denylist');
+// Pseudocódigo do adaptador a implementar e testar; SHA deve ser validado como commit existente.
+const paths = listTrackedBlobsAtCommit(headSha, DEFAULT_SCAN_ROOTS, approvedExtensions);
+const findings = [];
+for (const relativePath of paths) {
+  const content = execFileSync('git', ['show', `${headSha}:${relativePath}`], { encoding: 'utf8' });
+  findings.push(...scanContent(content, relativePath).map(({ id, description, line }) => ({ relativePath, id, description, line })));
+}
+emitRedactedSummary({ headSha, filesScanned: paths.length, findings });
+if (findings.length) process.exitCode = 1;
 ```
 
-O escopo padrão cobre superfícies de portabilidade AIOX: `.claude`, `.codex`, `.gemini`, `.grok`, partes de `.aiox-core`, `bin`, `packages` e `scripts`; extensões JS/TS, JSON, YAML, Markdown, shell e Dockerfile; há exclusões/allowlists definidos no módulo. Não percorre `src/main/java` nem os assets de produto. O relatório deve guardar comando, SHA, número de arquivos, resultado e findings redigidos. O scanner inclui `excerpt` no objeto de finding e erros de leitura podem incluir detalhes de exceção; o consumidor do gate nunca deve imprimir/serializar o objeto bruto, somente campos permitidos (arquivo, id, descrição estática e linha). O teste de aceite precisa provar a redação inclusive no caminho de erro. Logs protegidos não devem conter conteúdo de origem. O resultado histórico de 1.094 arquivos/0 findings não substitui execução na revisão futura.
+O adaptador é proposta, não existe ainda. `listTrackedBlobsAtCommit` deve usar a árvore Git do SHA exato, restringir às raízes/extensões/exclusões atuais e nunca consultar conteúdo do working tree; erros de `git show`/blob bloqueiam. Não emitir o campo `excerpt` de `scanContent`, nem mensagem bruta de erro. O teste deve criar arquivo untracked contendo um marcador sintético único dentro de uma raiz varrida e provar que ele não é lido nem aparece na saída; também deve criar blobs commitados com e sem finding e provar a associação ao SHA. Assim preserva-se o scanner real sem ler arquivos pessoais locais.
+
+O escopo padrão atual cobre superfícies de portabilidade AIOX: `.claude`, `.codex`, `.gemini`, `.grok`, partes de `.aiox-core`, `bin`, `packages` e `scripts`; extensões JS/TS, JSON, YAML, Markdown, shell e Dockerfile; há exclusões/allowlists definidos no módulo. Não percorre `src/main/java` nem os assets de produto. Em 2026-11-09, uma execução local do `scanProject({ projectRoot })` existente retornou `ok=true`, 1.094 arquivos e 0 findings, com saída redigida. Como essa função lê o filesystem, esse resultado é evidência do scan manual no checkout, não validação do adaptador proposto nem prova de que untracked nunca é lido. Também foi confirmado que o fixture sintético `const fixture = "sinkra_test_marker";` produz um finding `sinkra-prefix` em `scanContent`; ainda não foi testado um adaptador Git que ignore um arquivo untracked. A execução futura do gate deve registrar SHA, comando, escopo, contagem, resultado e findings redigidos.
 
 ## 6. CodeRabbit: recomendação e decisão formal necessária
 
@@ -128,21 +145,25 @@ As alternativas não são intercambiáveis sem decisão sobre quando o gate ocor
 
 ### A. CLI em ambiente compatível
 
-Manter CLI como verificação pre-push obrigatória até existir alternativa formalmente aprovada. Antes de contar o resultado, provar que a CLI revisou o range exato de saída, registrar base SHA e head SHA completos e validar a sintaxe suportada. `-t uncommitted` não comprova revisão de commits já feitos. Não presumir que a CLI aceita range/SHA sem uma prova. Recomendação: CRITICAL e HIGH bloqueiam; HIGH só pode ser resolvido ou dispensado por waiver formal aprovado. Medium/Low são registrados conforme regra aprovada. CLI ausente, não autenticada, timeout, erro genérico, saída não analisável ou SHA diferente resultam em `BLOCKED`; nenhuma confirmação interativa converte falha em PASS.
+Manter CLI como verificação pre-push obrigatória até existir alternativa formalmente aprovada. Antes de contar o resultado, provar por POC que a CLI revisou o range exato de commits pretendido e registra base SHA e head SHA completos. O comando vigente `-t uncommitted` não comprova revisão dos commits já criados; não presumir suporte a range/SHA sem teste com revisão identificável. A CLI não está disponível neste ambiente e nenhum relatório existe para `ded9437`, `94f1b6e`, `89d3c66` ou para o range completo; portanto, não há evidência de review utilizável para publicação.
+
+Para a **adaptação mínima**, manter o limiar já escrito na Constitution: zero CRITICAL. HIGH mantém a semântica atualmente implementada (CONCERNS/aviso e decisão explícita conforme fluxo vigente), sem elevar silenciosamente HIGH a bloqueio. Tratar o endurecimento de HIGH para BLOCK como decisão separada D14. Em qualquer severidade, CLI ausente, não autenticada, timeout, erro genérico, saída não analisável ou SHA diferente resultam em `BLOCKED`; confirmação humana não converte falha operacional em review válida ou PASS.
 
 ### B. Integração GitHub como verificação pré-merge
 
-Pode ser avaliada apenas como alternativa pré-merge. A revisão associada ao PR/SHA ocorre depois do push e não satisfaz automaticamente o gate pre-push. Até que haja emenda e aprovação formal, a CLI pre-push continua sendo o requisito proposto. Adotar B exige demonstrar:
+Opção B é apenas uma alternativa futura, não selecionada nesta proposta. Ela exigiria uma nova decisão constitucional sobre mover o gate para pré-merge, autorização humana formal e configuração de branch protection confirmada. Não há bootstrap/exceção de primeiro push proposto; a integração GitHub não satisfaz o pre-push atual nem desbloqueia esta publicação.
 
 - check/revisão CodeRabbit requerido no branch protection/ruleset e associado ao SHA exato do head do PR;
 - escopo revisado cobrindo todo o diff pretendido e atualizações da branch/head;
-- mapeamento de severidade coerente com a política: CRITICAL/HIGH bloqueiam conforme esta recomendação; waiver é formal e limitado; demais findings são registrados segundo regra aprovada;
+- mapeamento de severidade coerente com a decisão aprovada: CRITICAL bloqueia conforme a Constitution vigente; HIGH segue a política vigente até que eventual endurecimento seja aprovado separadamente; waiver é formal e limitado; demais findings são registrados segundo regra aprovada;
 - check ausente, pendente, falho, obsoleto ou em SHA diferente mantém merge bloqueado;
 - publicação pré-push segue bloqueada enquanto o CLI obrigatório não estiver satisfeito, salvo se a emenda constitucional e a equipe aprovarem explicitamente a troca de etapa/mecanismo.
 
-Para A e B, estados distintos — finding CRITICAL/HIGH, timeout, erro genérico, autenticação ausente, check pendente/ausente e resultado obsoleto — precisam de resultados separados no gate. Falha de infraestrutura nunca equivale a review limpa. A semântica atual (HIGH como CONCERNS/aviso e erro genérico como possível confirmação) deve ser explicitamente reconciliada entre tarefa, `quality-gate-config.yaml` e checklist.
+Para A e B, estados distintos — finding CRITICAL, finding HIGH, timeout, erro genérico, autenticação ausente, check pendente/ausente e resultado obsoleto — precisam de resultados separados no gate. Falha de infraestrutura nunca equivale a review limpa. A decisão de HIGH é independente da escolha CLI/GitHub e deve ser registrada. A semântica de erro genérico como possível `CONCERNS`/confirmação na tarefa atual deve ser substituída por estado bloqueante quando não houver relatório de revisão válido, se essa alteração for aprovada como requisito de integridade do gate.
 
 Até essa aprovação e evidência técnica, B não substitui A. Não se presume integração, nome de check ou configuração de branch protection.
+
+**Situação deste checkout:** a CLI `coderabbit` não está disponível no ambiente e não há relatório de review associado ao range/base/head SHA atual. Portanto, não existe evidência CodeRabbit aprovada para os commits `ded9437`, `94f1b6e` e `89d3c66`. A alternativa B também não foi aprovada e, por ocorrer no PR depois do push, não satisfaz o gate pre-push vigente. O requisito permanece bloqueante; este parágrafo registra estado, não concede exceção.
 
 ## 7. Arquivos não rastreados, limpeza e publicação
 
@@ -157,7 +178,7 @@ Resolver “working tree limpo” como **estado seguro de publicação**, sem ap
 
 Arquivos ignorados e binários seguem a mesma regra de escopo: um arquivo ignorado ou não rastreado não é lido, copiado, enviado ou examinado automaticamente. Arquivos já rastreados no range são examinados mesmo se também corresponderem a uma regra de ignore. Se um binário for selecionado para publicação e um scanner obrigatório não puder examiná-lo, o resultado é `BLOCKED` até existir método aprovado; limitação do scanner não vira `N/A`. Colisões de caminho entre itens locais e arquivos pretendidos devem ser identificadas antes de checkout/merge que possa substituí-los.
 
-No estado atual, `.vscode/`, `01-especificacao-e-documentacao.md` e `02-roteiro-e-plano-de-commits.md` são preservados e permanecem fora dos commits `ded9437` e `94f1b6e`. Esta proposta também permanece não rastreada. A verificação se concentra na árvore exata enviada, sem allowlist que esconda arquivos dentro do range.
+No estado atual verificado após o commit `89d3c66`, `.vscode/` continua preservada como não rastreada e fora dos commits. `01-especificacao-e-documentacao.md`, `02-roteiro-e-plano-de-commits.md` e esta proposta foram incluídos explicitamente no commit documental `89d3c66`; eles não pertencem ao range dos commits RF-13 `ded9437` e `94f1b6e`, mas passam a fazer parte do range total caso os três commits sejam publicados juntos. Qualquer gate deve analisar o conjunto exato de commits e SHAs que será publicado, não ignorar os documentos por uma allowlist presumida.
 
 ## 8. Texto constitucional proposto para o Artigo V
 
@@ -165,7 +186,7 @@ O Artigo V atual é explícito sobre comandos npm como MUST. A adaptação reque
 
 > **MUST:** Cada projeto executa todos os gates obrigatórios aplicáveis ao perfil de tecnologia detectado por descritores reais e/ou configuração aprovada. O perfil define comandos reproduzíveis de build, testes, cobertura, segurança e revisão. Em projetos multi-stack, todos os perfis presentes são verificados. Um check obrigatório aplicável não executado, falho ou sem evidência verificável bloqueia publicação/integração. Falha ambiental permanece bloqueante até execução válida ou exceção formal prevista nesta Constitution. Check exclusivo de stack/artefato ausente pode ser N/A apenas com justificativa rastreável e sem reduzir o objetivo de qualidade/segurança correspondente. Checks npm permanecem obrigatórios no perfil Node; os checks de story e revisão continuam obrigatórios.
 
-Os checks npm atuais ficam descritos como perfil Node, não removidos do perfil Node. Maven, Node e outras stacks terão comandos e controles próprios aprovados. A seção geral da Constitution atribui BLOCK a MUST críticos e WARN a MUST não críticos; o Artigo V também define gate de pre-push BLOCK. A emenda precisa declarar a precedência: recomendação desta proposta é que cada check obrigatório do gate de publicação seja BLOCK, enquanto WARN/INFO se apliquem apenas a itens consultivos que não são pré-condições. A falha ambiental de check obrigatório também bloqueia. Revisores devem aprovar ou substituir essa regra explícita. A redação é proposta, não vigente.
+Os checks npm atuais ficam descritos como perfil Node, não removidos do perfil Node. Maven, Node e outras stacks terão comandos e controles próprios aprovados. Para eliminar a contradição MUST/BLOCK/WARN, propõe-se incluir também esta regra interpretativa no Artigo V/Compliance: **todo MUST que constitua pré-condição de um gate obrigatório de publicação ou integração definido no Artigo V tem severidade BLOCK, inclusive falha ambiental, ausência de ferramenta ou evidência; WARN aplica-se somente a recomendações não bloqueantes que não sejam pré-condições MUST; INFO aplica-se a SHOULD.** A tabela global de severidade continua válida para demais princípios: MUST que não integra um gate de publicação explicitamente bloqueante pode permanecer WARN quando assim classificado, e nenhuma regra geral pode rebaixar um BLOCK explícito do Artigo V. Assim, a regra não converte automaticamente todos os MUST da Constitution em BLOCK nem rebaixa nenhum check obrigatório. `N/A` requer artefato/stack realmente ausente, razão registrada e nenhuma perda do objetivo de segurança/qualidade. Revisores devem aprovar ou propor redação alternativa. Esta interpretação é candidata, não vigente.
 
 ### Versionamento constitucional
 
@@ -177,32 +198,42 @@ Recomendação desta revisão: **MINOR — Constitution 1.2.0**. O Artigo V pass
 |---|---|---|
 | D1 | Texto final e alcance do Artigo V | Aprovar uma redação de gates obrigatórios por perfil; resolver MUST npm atual. |
 | D2 | Detecção, wrapper, subdiretórios e multistack | Maven por POM + wrapper; casos ambíguos falham com instrução de configuração. |
-| D3 | Maven multimódulo e cobertura | Recomendar agregado do reactor como regra única, 80%/70%, com prova de todos os módulos com produção; sem segundo limiar por módulo nesta proposta. |
+| D3 | Maven multimódulo e cobertura | Fora do perfil mínimo atual; POM com módulos resulta em BLOCKED. Suporte futuro requer decisão de escopo, story e POC para JaCoCo aggregate ou critério por módulo. |
 | D4 | Wrapper e integridade | Recomendar Wrapper como único executor, URLs HTTPS/versões explícitas e checksums do Wrapper JAR/distribuição; ausência/divergência bloqueia. |
-| D5 | Ferramentas e limiares de dependências/SAST | Candidatos: Dependency-Check 13.0.0 e SpotBugs Maven 4.10.5.0 + FindSecBugs 1.14.0; Critical/High como bloqueio recomendado e POC obrigatória Java 21. |
+| D5 | Ferramentas e limiares de dependências/SAST | Candidatos e versões exigem POC no Java 21; nenhuma ferramenta/versão/threshold fica aprovada só por constar aqui. Findings sem política de severidade aprovada mantêm o check pendente, não PASS. |
 | D6 | Segredos e privacidade | Candidato Gitleaks 8.30.1, condicionado a checksum e fixtures; scanner selecionado varre o range exato e redige saída. Arquivos locais fora do range não são lidos/enviados sem autorização. |
-| D7 | Assets frontend | Definir verificações obrigatórias de sintaxe JS (Node), HTML/CSS (Nu) e análise JS de segurança/lint; não confundir propósitos. |
-| D8 | Port denylist | Preservar scanner/bloqueio; escopo AIOX e logs sem excerpts, inclusive erros de leitura. |
-| D9 | CodeRabbit e momento do controle | Recomendar CLI pre-push associada ao range/base/head SHA; CRITICAL/HIGH bloqueiam. B continua pré-merge e exige emenda/aprovação; não substitui A implicitamente. |
+| D7 | Assets frontend | Detectar assets estaticamente independente de `package.json`; `node --check` verifica sintaxe JS. Ferramentas HTML/CSS e lint/SAST são candidatas que exigem aprovação/POC; não confundir propósitos. |
+| D8 | Port denylist | Preservar padrões/scanner bloqueante; definir adaptador por blobs Git do SHA para não ler untracked; saída sem excerpts. |
+| D9 | CodeRabbit e momento do controle | Direcionamento recebido: opção A, CLI autenticada para o range committed e base/head SHA. B não foi escolhida; indisponibilidade da CLI bloqueia publicação. |
 | D10 | Estado Git/arquivos não rastreados | Recomendar estado seguro: itens não rastreados/ignorados preservados e inventariados sem leitura de conteúdo; binário publicável não analisável bloqueia. |
-| D11 | Emenda/versionamento e autoridade | Recomendar Constitution 1.2.0 MINOR e todo MUST aplicável como BLOCK; consenso de `@architect` + `@po` e qualquer aprovação adicional da equipe devem ser registrados. |
+| D11 | Emenda/versionamento e autoridade | Recomendar Constitution 1.2.0 MINOR; BLOCK para pré-condições obrigatórias do gate do Artigo V e WARN/INFO conforme escopo definido; registrar consenso de `@architect` + `@po` e aprovações adicionais da equipe. |
 | D12 | Evidências e retenção | Relatórios por execução vinculados aos SHAs; manter retenção vigente de 30 dias, sem mudança nesta proposta. |
+| D13 | Story RF-13 e compatibilidade do status | Manter a story em Review e propor que o gate aceite Review após emenda; até consenso, alteração e teste do parser, a regra vigente continua sem aceitar Review. Não alterar o status para contornar o gate. |
+| D14 | Severidade CodeRabbit HIGH | Adaptação mínima conserva CRITICAL como bloqueador e semântica vigente para HIGH; tornar HIGH bloqueante é endurecimento separado que exige consenso e justificativa, não efeito colateral de Maven. |
+| D15 | Waivers e autoridade | Direcionamento: @architect avalia arquitetura, @qa qualidade, @po escopo; responsável nominal do repositório só poderá autorizar waiver se uma emenda constitucional definir explicitamente esse poder, limites, prazo e registro. Até essa emenda, waiver/bypass de gate obrigatório não é permitido. Falta identificar o responsável. |
+| D16 | JaCoCo multimódulo | Fora do escopo desta adaptação mínima. POM com módulos é detectado e bloqueado como perfil ainda não suportado, nunca N/A ou PASS silencioso. Suporte exige decisão de escopo, story e POC específica antes de implementação. |
+| D17 | Bootstrap CodeRabbit B | Não selecionado. A proposta não autoriza bootstrap nem push excepcional. Reconsiderar B exigiria nova decisão formal sobre mudança do gate pre-push e aprovação constitucional; enquanto isso, CLI A é obrigatória. |
 
 ## 10. Testes de aceite propostos para a implementação
 
 | Cenário | Resultado esperado |
 |---|---|
 | Maven puro; Node puro; Maven + Node; assets estáticos sem pacote Node | Detectar todos e somente os perfis reais. Checks sem artefato recebem N/A justificado; falha obrigatória nunca recebe PASS. |
-| Maven multimódulo | Wrapper executa o reactor; JaCoCo agregado cobre todos os módulos de produção; módulo ou relatório omitido bloqueia. |
+| Maven multimódulo fora do escopo atual | Detecção do reactor com módulos bloqueia com status explícito de perfil não suportado. Só após decisão de escopo/story/POC a matriz passa a exigir a estratégia JaCoCo aprovada; não marcar N/A nem PASS silencioso. |
 | Wrapper ausente/corrompido, checksum inválido, POM inválido/ambíguo ou execução em subdiretório | Raiz e perfil resolvidos deterministicamente ou gate bloqueia; não usa Maven global como fallback. |
 | Build/teste/migration falha ou cobertura abaixo de 80%/70% | Bloqueia e vincula exit code, contagens e relatório ao SHA avaliado. |
 | Docker, feed CVE, secret scanner, SCA, SAST, Nu ou CodeRabbit indisponível/timeout/sem relatório | `BLOCKED` ambiental para check obrigatório; nunca PASS/N/A silencioso. |
-| Denylist encontra ocorrência ou falha ao ler arquivo | Bloqueia; teste comprova que logs não contêm `excerpt`, conteúdo de origem ou stack trace sensível. |
-| Secret scanner, SCA ou SAST encontra finding; falso positivo ou waiver | Findings bloqueantes impedem publicação; waiver amplo, vencido ou sem responsável/revisão não suprime. Saída redige valor secreto. |
+| Denylist encontra ocorrência, falha ao ler blob ou há arquivo untracked com marcador sob raiz AIOX | Bloqueia finding/erro; leitura do gate vem só de blobs Git no SHA; teste prova que o marcador untracked não é lido nem exposto; logs não contêm `excerpt`, conteúdo de origem ou stack trace sensível. |
+| Secret scanner, SCA ou SAST encontra finding; falso positivo ou waiver | Findings bloqueantes impedem publicação; waiver de check obrigatório não existe na política atual. Qualquer futura exceção exige emenda constitucional, autoridade e campos definidos; saída redige valores secretos. |
 | Node, HTML/CSS ou análise estática frontend falha | Check aplicável bloqueia; ferramenta ausente não vira PASS. Sintaxe não é apresentada como SAST. |
-| CodeRabbit: finding CRITICAL/HIGH, timeout, auth ausente, erro genérico, `-t uncommitted`, range incompleto ou SHA divergente | Findings bloqueantes e falhas operacionais bloqueiam; `-t uncommitted` não comprova commits prontos; revisão deve estar vinculada ao range/base/head SHA. |
-| Alternativa GitHub CodeRabbit ausente, pendente, falha ou SHA antigo | Pré-merge bloqueado se B tiver aprovação formal; não satisfaz pre-push. |
-| Arquivos não rastreados/ignorados, pessoais, binários ou colisão de caminho | Preservar e inventariar por caminho/estado sem leitura/upload automático. Arquivo selecionado entra nos scans; binário obrigatório não analisável ou risco de sobrescrita bloqueia. Nada é staged automaticamente. |
+| CodeRabbit: finding CRITICAL; finding HIGH; timeout, auth ausente, erro genérico, `-t uncommitted`, range incompleto ou SHA divergente | CRITICAL bloqueia; HIGH segue a regra vigente, salvo aprovação explícita D14; falha operacional/resultado sem SHA/range válido bloqueia; nenhum relatório ausente vira PASS. |
+| Opção B — GitHub CodeRabbit | Não selecionada nesta candidata; não satisfaz o gate pre-push e não desbloqueia os commits locais. Reconsideração exige nova emenda e autorização formal. |
+| Arquivos não rastreados/ignorados, pessoais, binários ou colisão de caminho | Preservar e inventariar por caminho/estado sem leitura/upload automático. Gates vinculados a commits consomem blobs do SHA; arquivos selecionados entram nos scans somente por seleção explícita. Binário obrigatório não analisável ou risco de sobrescrita bloqueia. Nada é staged automaticamente. |
+| Story RF-13 em Review | Direção proposta: preservar Review e aceitar esse estado após emenda. Antes da emenda e do teste atualizado do parser, regra atual continua bloqueando; não reescrever status. |
+| Denylist e leitura local | Criar arquivo untracked sintético, ausente da árvore Git, sob uma raiz AIOX; seu conteúdo `const fixture = "sinkra_test_marker";` é comprovadamente detectado por `scanContent` nesse caminho. O adaptador do commit SHA deve ignorá-lo, não ler seu conteúdo e não imprimir o marcador. Finding commitado e erro de blob devem falhar com logs sanitizados. |
+| CodeRabbit indisponível ou sem CLI autenticada | BLOCKED; não há bootstrap ou exceção de primeiro push nesta candidata. Resultado precisa cobrir o range committed e base/head SHA completos. |
+| Waiver de gate obrigatório | Rejeitado pela política atual. Uma futura emenda, se aprovada, deve definir finding/risco, escopo, justificativa, checks compensatórios, responsável, aprovador humano nominal, expiração, registro e vínculo com SHA; waiver expirado ou sem esses campos não muda BLOCKED para PASS. |
+| Assets estáticos HTML/CSS/JS sem `package.json` | Perfil de assets é detectado pela raiz/extensões; `node --check` é registrado apenas como syntax check; checks HTML/CSS/lint/SAST só passam com ferramentas/configuração aprovadas e relatório vinculado ao SHA. |
 | SHA de build/teste/review diverge do SHA que será publicado | Invalida checks dependentes; repetir no SHA final antes de liberar publicação. |
 
 Os testes do gate também devem verificar que achados falsos/waivers são explícitos, auditáveis, limitados e não imprimem segredos. Não enfraquecer os testes do produto para obter gate verde.
@@ -216,22 +247,27 @@ O relatório local/CI deve ser um artefato estruturado (por exemplo, JSON com `h
 - **`@architect`:** arquitetura do detector/perfis, segurança e equivalência técnica dos controles.
 - **`@po`:** escopo, prioridades, critérios verificáveis, impacto e dependências.
 - **Consenso:** aprovação explícita de ambos é exigida pela Constitution. Parecer favorável condicionado não constitui consenso.
-- **Equipe/dono da política:** deve formalizar qualquer aprovação adicional estabelecida pela governança da equipe, em especial a alternativa CodeRabbit B e a mudança do momento pre-push para pré-merge. A Constitution lida não nomeia um aprovador humano separado para emendas.
+- **Autoridade humana:** o responsável nominal do repositório ainda deve ser identificado. Seu poder para autorizar waivers não existe na política vigente; só poderá ser considerado após emenda constitucional explícita. A designação da pessoa, sozinha, não cria autoridade para bypass.
+- **Story existente:** a story docs/stories/1.6-commit-16-frontend-rf13.md permanece em Review. Direcionamento do solicitante e recomendação do PO: manter Review e propor que esse estado seja aceito após emenda. Até alterar formalmente e testar Constitution/gate/parser, a regra atual não aceita Review.
+- **Mecanismo de ativação:** `generate-greeting.js` e o fallback `unified-activation-pipeline.js` falharam por ausência de `js-yaml`. As revisões por subagentes com skills `aiox-architect`/`aiox-po` são pareceres advisory; não serão apresentadas como aprovação formal automática nem como decisão humana.
 - **Após consenso:** `@sm` ou `@po` cria/refina story com critérios/File List (Artigo III); então a política é implementada com versão e propagada aos artefatos dependentes. `@devops` conserva a autoridade exclusiva para push.
+- **@qa:** parecer consultivo de qualidade e evidências; não substitui o consenso constitucional exigido entre @architect e @po.
 
 ### Sequência proposta para fechar decisões
 
-1. `@architect` e `@po` aprovam o alcance do Artigo V, precedência BLOCK/WARN e justificativa PATCH/MINOR.
-2. A equipe decide a etapa do CodeRabbit e aprova os objetivos/ferramentas/limiares de SCA, SAST, segredos e assets; nenhuma ferramenta candidata é instalada por esta proposta.
-3. Aprovar semantics de Maven reactor/coverage, wrapper integrity e publicação com itens untracked fora do conjunto.
-4. Fechar formato do relatório e os casos de aceitação; registrar consenso dos revisores.
-5. Só então `@sm`/`@po` prepara a story; implementação e propagação seguem depois.
+1. `@architect` e `@po` aprovam ou revisam a precedência Artigo V BLOCK/WARN e justificativa PATCH/MINOR.
+2. A candidata seleciona a CLI CodeRabbit A para pre-push; confirmar via POC que cobre range committed/base/head SHA. B fica não selecionada e só pode ser reaberta por nova emenda formal. A decisão de severidade HIGH permanece separada em D14.
+3. `@po` resolve legitimamente o estado RF-13; não se altera status antes do parecer.
+4. Aprovar perfil separado de assets estáticos, segurança/scanners e severidades; concluir POCs e versões fixas para controles novos.
+5. Fechar os controles do escopo single-module desta adaptação: Wrapper integrity, adaptador denylist por blobs, tratamento de untracked e relatório por SHA. JaCoCo multimódulo só entra em nova etapa se a equipe aprovar expansão de escopo, story e POC.
+6. Fechar matriz de aceite e registrar consenso explícito dos revisores. Parecer favorável com condições não conta como consenso.
+7. Só então `@sm`/`@po` prepara/refina story; implementação e propagação seguem depois.
 
 Prioridade recomendada: alta para desbloquear publicação segura dos commits, sem permitir push enquanto um gate atualmente obrigatório estiver insatisfeito e sem alternativa aprovada.
 
 ## 12. Artefatos candidatos à mudança após autorização
 
-Somente após consenso e story aprovada: `.aiox-core/constitution.md` (Artigo V e versão), tarefa pre-push, tarefa `security-scan.md`, detector de repositório, `quality-gate-config.yaml`, checklist pre-push, instruções `AGENTS.md` quando aplicável, agentes/templates/tasks dependentes, testes do detector/gate e documentação da story. Não modificar esses artefatos nesta etapa.
+Somente após consenso e story aprovada, os artefatos mínimos incluem: `.aiox-core/constitution.md` (Artigo V/Compliance e versão); **`AGENTS.md`** (seus comandos npm são atualmente requisitos explícitos e precisam ser alinhados); tarefa `github-devops-pre-push-quality-gate.md`; tarefa `security-scan.md`; detector/perfil Maven e asset; runner denylist por blobs; parser e configuração `quality-gate-config.yaml`; checklist pre-push; referências/status nos agentes `devops.md`, templates e workflows que duplicam os comandos; testes de unidade/integração do detector e de cada decisão; story e documentação de evidência. A lista final deve ser verificada por busca de todos os comandos/status antigos antes de fechar a implementação. Não modificar esses artefatos nesta etapa.
 
 ## 13. Referências
 
@@ -262,5 +298,39 @@ Somente após consenso e story aprovada: `.aiox-core/constitution.md` (Artigo V 
 
 - Revisão 1: proposta técnica; registrava escolhas de ferramenta, severidade, cobertura multimódulo, CodeRabbit e estado Git como decisões abertas.
 - Revisão 2 (2026-11-09): consolida recomendações de Constitution 1.2.0/MINOR, BLOCK para MUST aplicável, cobertura agregada, checksums do Wrapper, candidatos de ferramentas/versões, severidades e waivers, saída sanitizada da denylist, CodeRabbit CLI pre-push, preservação de arquivos locais e retenção de 30 dias.
+- Rodada advisory 3 (2026-11-09): `@architect` e `@po` favoráveis com condições. Solicitaram perfil de assets estáticos, mecânica JaCoCo multimódulo, leitura denylist sem untracked, separação do limiar HIGH e decisão legítima do status RF-13.
+- Revisão 4 (2026-11-09): candidata atualizada nesses pontos e submetida novamente. Ambos permaneceram favoráveis com condições; `@architect` pediu fixture untracked com padrão que realmente gere finding e esclarecimento de timeline; `@po` pediu decisão explícita do status, definição do bootstrap CodeRabbit B, autoridade de waivers e inclusão obrigatória de `AGENTS.md` na propagação.
+- Revisão 5 (2026-11-09): incorpora as condições da revisão 4, define o bootstrap proposto como exceção única e auditável ainda dependente de aprovação, registra opções explícitas para `Review`/JaCoCo multimódulo e atribui à equipe a designação do aprovador de waivers. Aguarda nova revisão advisory; ainda não há consenso.
 
-**Estado:** candidata consolidada para revisão efetiva de `@architect` e `@po`; ainda não aprovada nem implementada. Versões, thresholds e exceções são recomendações sujeitas a validação e consenso. Compatibility POCs pendentes: Dependency-Check no reactor do projeto; SpotBugs/FindSecBugs juntos em Java 21; Semgrep e ruleset fixo; Gitleaks com fixtures; ESLint/Stylelint com Node pinado; Nu Html Checker com checksum; e capacidade da CLI CodeRabbit de revisar o range de commits e comprovar base/head SHA. Nenhuma política, gate, template, agente, código ou configuração SonarCloud foi alterada. Não houve build/teste nesta atualização documental. Os commits `ded9437` e `94f1b6e`, `.vscode/`, os dois documentos locais não rastreados e esta proposta foram preservados.
+- Revisão 6 (2026-11-09): registra direcionamentos recebidos e POC sintética limitada de seleção por Git blobs; permanece candidata, sem consenso nem aprovação, conforme aditivo seção 15.
+- Revisão 7 (2026-11-09): responde aos pareceres condicionais da revisão 6: waiver não é permitido pela política atual e depende de emenda explícita; multimódulo fica fora do escopo mínimo e bloqueia até suporte aprovado; RF-13 preserva Review; opção B/bootstrap removida da rota escolhida. Não há consenso.
+- Revisão 8 (2026-11-09): alinha as referências residuais apontadas no parecer advisory da revisão 7: seção B marcada como alternativa futura não selecionada, passo multimódulo condicionado a nova expansão, e tabela de waiver esclarece que a autoridade só pode existir após emenda. Não declara consenso.
+- Pareceres advisory: revisões 7 e 8 foram condicionais. Na revisão 10, @architect e @po deram consenso técnico explícito ao conteúdo substantivo após conferir as correções de waiver, D3/D16, severidades, B/bootstrap, QA e RF-13. Isso não é aprovação humana nem torna a emenda vigente; o processo constitucional e a story ainda são necessários.
+
+**Estado:** revisão 10, conteúdo substantivo recebeu consenso técnico explícito de @architect e @po; ainda não é emenda aprovada nem implementada. Falta seguir o processo constitucional (story, aprovação formal aplicável, versionamento e propagação). Nenhuma política/gate/código foi alterado. CLI CodeRabbit autenticada e review por range/base/head SHA continuam ausentes; publicação bloqueada.
+
+## 15. Direcionamentos recebidos e POC limitada (atualizado na revisão 10)
+
+Este aditivo prevalece sobre recomendações incompatíveis das seções anteriores. As respostas do solicitante são direcionamentos para a candidata; não equivalem a consenso dos revisores nem à aprovação da emenda.
+
+| Tema | Direcionamento | Estado formal |
+|---|---|---|
+| Aprovação | Consenso de @architect + @po; uma autoridade humana nominal só poderá aprovar waiver se a emenda constitucional criar esse poder e seus limites | Falta identificar a pessoa e obter consenso explícito sobre o texto |
+| CodeRabbit | Opção A: CLI autenticada, review do range committed e associação a base/head SHA | CLI não disponível neste ambiente; POC e execução real continuam pendentes. Opção B não foi escolhida |
+| Story RF-13 | Manter Review e propor que o gate aceite esse estado após emenda | Depende de consenso e alteração/teste do parser; a regra vigente continua bloqueando Review |
+| POCs prioritárias | CodeRabbit range/SHA, denylist por Git blobs e scanners de segurança; JaCoCo multimódulo somente se o suporte multimódulo entrar no escopo | Somente a prova conceitual de denylist foi exercitada; as demais permanecem pendentes |
+| Segurança e waiver | @architect avalia arquitetura, @qa qualidade, @po escopo; o responsável nominal do repositório só poderá autorizar waiver se uma emenda constitucional criar explicitamente esse poder e seus limites | Falta identificar o responsável e obter a emenda/consenso; a política atual não permite waiver de gate obrigatório |
+
+### POC denylist por Git blobs
+
+Em ambiente sintético e separado, sem alterar o repositório Qas, um harness Node enumerou arquivos committed com git ls-tree/git show e passou o conteúdo para scanContent em .aiox-core/core/security/port-denylist.js.
+
+Na revisão sintética d37d5312f5fabbb3a6f7d7c7e7cda00c13ce5fbf, um fixture rastreado produziu um finding sinkra-prefix. No parent eb5d66927eba88fcbd4f799893ed54ab6f5458fd, o arquivo correspondente não produziu findings. Um fixture não rastreado permaneceu fora da lista enumerada por git ls-tree.
+
+Esta POC comprova somente a viabilidade de selecionar blobs committed e deixar arquivos untracked fora do conjunto. Não valida adaptador de produção, renames/deletions, limites de tamanho, binários, submódulos, SHA inválido, relatórios sanitizados completos nem todos os roots. Esses cenários permanecem critérios da POC de implementação.
+
+### Estado consolidado
+
+O conteúdo da revisão 10 recebeu consenso técnico explícito de @architect e @po, mas continua não aprovado como emenda nem implementado. Constitution, tarefas, gates, agentes, templates, código de produto e configuração SonarCloud não foram alterados. Não houve build/teste Maven nesta atualização documental. A POC de blobs é conceitual, não valida adaptador de produção. CLI CodeRabbit autenticada e review por range/base/head SHA permanecem ausentes; publicação bloqueada.
+
+O consenso técnico de @architect e @po sobre o conteúdo da revisão 10 foi registrado. Ainda não existe emenda constitucional vigente: é necessário criar/refinar a story por @sm/@po, cumprir a autorização formal aplicável, atualizar versão e propagar a regra; somente depois implementar e validar. Waivers continuam proibidos pela política atual. O push permanece reservado a @devops e bloqueado enquanto CLI CodeRabbit e demais gates obrigatórios não passarem.
