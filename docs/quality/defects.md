@@ -15,4 +15,6 @@ Este registro começa no Commit 01. Defeitos de produto devem conter severidade,
 
 ## Defeitos de produto
 
+Atualização de 2026-11-09 para DEF-008: após a evidência anterior de 201/201, o incremento de autorização acrescentou teste real de criação, alteração e desativação de recursos por SOLICITANTE e RESPONSAVEL. `ResourceMaintenanceIntegrationTest` passou 3/3; `clean verify` passou 202/202, sem falhas, erros ou testes ignorados. A carga JMeter real segue pendente e não há métricas de desempenho registradas.
+
 DEF-006 e DEF-007 foram corrigidos e retestados na suíte Maven de 2026-11-09. DEF-008 foi reproduzido, corrigido e retestado na execução direcionada (46 testes) e na suíte completa (201 testes, sem falhas/erros). Carga JMeter real permanece pendente, sem defeito de carga declarado.
