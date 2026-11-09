@@ -13,9 +13,9 @@
 
 Esta reconciliação registra o que foi resolvido, sem converter cobertura de código em percentual de requisitos atendidos e sem alegar aprovação global.
 
-## README — entrega separada
+## README — atualizado
 
-O README da raiz não foi alterado nesta entrega. Na próxima revisão documental, atualizar nele o link/checklist da RTM para apontar diretamente a `docs/RTM.md`, preservando o conteúdo funcional da seção de frontend. O caminho `RTM.md` continua funcionando como encaminhamento compatível.
+O README principal foi revisado contra Compose, configuração Spring, segurança, controllers, RTM, ADRs e diagramas. Agora aponta para `docs/RTM.md` como matriz oficial, mantém `RTM.md` como compatibilidade, registra instruções para PowerShell e Bash e separa o que foi executado do que continua pendente. Nenhuma credencial foi adicionada. As limitações visual, SonarCloud e SLO permanecem abertas.
 
 ## Limitações ainda abertas
 

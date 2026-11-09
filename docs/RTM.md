@@ -27,7 +27,7 @@ O teste automatizado foi executado nesta branch após a integração. Os checks 
 | **RF-11 — Notificação simulada ou integração externa** | Falha do provedor de notificação reverter indevidamente uma reserva ou não ser tratada. | [ApprovalIntegrationTest](../src/test/java/br/com/organizacaorecursos/integration/ApprovalIntegrationTest.java), com WireMock; adaptador em `src/main/java/br/com/organizacaorecursos/notification/`. | Verificado para o adaptador simulado e falhas exercitadas com WireMock; entrega a provedor externo real não comprovada. |
 | **RF-12 — Relatório de utilização** | Horas, percentuais ou conflitos evitados divergirem dos registros. | [UtilizationReportIntegrationTest](../src/test/java/br/com/organizacaorecursos/integration/UtilizationReportIntegrationTest.java); endpoint `GET /api/v1/reports/utilization`. | Verificado nos cenários de integração com dados controlados; não implica validação independente de todos os relatórios possíveis. |
 | **RF-13 — Interface responsiva e mensagens compreensíveis** | Interface ou mensagens serem inutilizáveis em telas menores, ou ações disponíveis divergirem das permissões. | [index.html](../src/main/resources/static/index.html), [styles.css](../src/main/resources/static/styles.css), [app.js](../src/main/resources/static/app.js); [Story 1.6](stories/1.6-commit-16-frontend-rf13.md); CI do head `f37e958`; empacotamento confirmado pelo `clean verify` no `d4b02bb`. | **Parcial:** frontend implementado e integrado; fluxos HTTP/smoke descritos na story. A inspeção visual completa em 320, 375, 390, 768, 1024 e 1440 px continua pendente. |
-| **RF-14 — Documentação de API ou fluxos públicos** | Contratos, permissões ou passos públicos divergirem da implementação. | OpenAPI em `/v3/api-docs`; [README](../README.md), [diagramas](architecture/), [roteiro de demonstração](apresentacao/roteiro-demo.md), [plano de testes](quality/plano-de-testes.md). | Parcialmente evidenciado por artefatos disponíveis; revisão completa e atualizada do README/contratos permanece para a entrega documental seguinte. |
+| **RF-14 — Documentação de API ou fluxos públicos** | Contratos, permissões ou passos públicos divergirem da implementação. | OpenAPI em `/v3/api-docs`; [README](../README.md), [diagramas](architecture/), [roteiro de demonstração](apresentacao/roteiro-demo.md), [plano de testes](quality/plano-de-testes.md). | Parcial: README e rotas principais foram revisados contra os controllers nesta entrega; não representa validação operacional de todos os fluxos ou payloads. |
 
 O subconjunto marcado como crítico na matriz raiz anterior foi preservado: RF-01, RF-05/RN-02, RF-06/RN-03, RF-07/RN-06, RF-08/RN-04, RF-10/RN-08, RN-01, RN-05 e RN-07. Os status preliminares daquela matriz não foram transportados como resultados.
 
@@ -65,7 +65,7 @@ A execução real de 2026-11-09 está detalhada na [evidência agregada](quality
 ## Limitações e status global
 
 - **RF-13:** frontend implementado e integrado, mas falta matriz completa de validação visual nos seis tamanhos requeridos.
-- **RF-14:** documentação existe; revisão final de README e alinhamento de contratos está planejada separadamente.
+- **RF-14:** README e rotas principais foram revisados nesta entrega; teste operacional de todos os fluxos e revisão exaustiva de payloads ainda não são declarados.
 - **SonarCloud:** pendente; nenhuma análise ou Quality Gate é declarado.
 - **Latência:** metas/SLO ainda não acordadas com o docente.
 - **TDD/BDD:** evidência de processo ainda precisa de revisão consolidada.

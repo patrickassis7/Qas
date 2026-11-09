@@ -13,7 +13,7 @@ Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras 
 | Integração externa | Envio de aprovação/rejeição/cancelamento e resposta HTTP/timeout | WireMock; `ApprovalIntegrationTest` |
 | API caixa-preta | Rotas HTTP, status, payload, autenticação/autorização, filtros e erros | MockMvc nos testes de integração; dados sintéticos e banco isolado por classe |
 | Ponta a ponta | Login → pesquisar → reservar recurso restrito → aprovar → retirar/iniciar → devolver/concluir → consultar auditoria | `PublicApiWorkflowEndToEndTest`, `TestRestTemplate`, servidor HTTP aleatório e PostgreSQL Testcontainers |
-| Interface visual | Responsividade e inspeção visual de mensagens | O frontend está na branch do PR #1; a matriz visual completa de 320, 375, 390, 768, 1024 e 1440 px continua pendente. Não substituir por teste de API. |
+| Interface visual | Responsividade e inspeção visual de mensagens | O frontend foi integrado em `develop` pelo merge `8e5fb34`; a matriz visual completa de 320, 375, 390, 768, 1024 e 1440 px continua pendente. Não substituir por teste de API. |
 
 ## Dados e isolamento
 
@@ -60,4 +60,4 @@ SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGAN
 - O workflow `CI` e o job `verify` foram observados em sucesso nos heads consultados dos PRs #1 e #2; os links e SHAs estão no [relatório final](relatorio-final.md). Esta branch de documentação não teve CI executado durante a atualização deste arquivo.
 - Frontend integrado em `develop` pelo merge `8e5fb34`, mas sem matriz completa de inspeção visual responsiva; RF-13 permanece parcialmente pendente.
 - SonarCloud não foi executado e permanece sob responsabilidade do integrante designado.
-- A reconciliação da RTM foi concluída em `docs/RTM.md`; o README será alinhado em uma entrega documental separada.
+- A RTM oficial está em `docs/RTM.md`; o README foi alinhado à matriz nesta entrega documental.

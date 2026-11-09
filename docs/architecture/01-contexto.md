@@ -2,7 +2,7 @@
 
 O sistema é uma aplicação web acadêmica para pesquisar recursos, solicitar reservas e acompanhar decisões. Os perfis SOLICITANTE, RESPONSAVEL e ADMINISTRADOR acessam o cliente web; o backend Spring Boot expõe a API REST protegida por JWT e persiste os dados no PostgreSQL. Nas mudanças de reserva que notificam o solicitante, o backend chama um endpoint HTTP configurável. A falha desse serviço é tratada como não fatal pelo adaptador de notificação.
 
-O cliente web RF-13 está em uma branch/PR separado do backend-base desta branch. Ele aparece como consumidor real da API, sem sugerir que seus arquivos estáticos já estejam em `origin/develop`.
+O cliente web RF-13 está servido como arquivos estáticos pelo próprio Spring Boot e foi integrado em `develop` pelo merge do PR #1 (`8e5fb34`). A inspeção visual completa nas larguras requeridas continua pendente.
 
 ```mermaid
 flowchart LR

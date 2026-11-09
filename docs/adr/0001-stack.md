@@ -19,7 +19,7 @@ O projeto acadêmico Organização de Recursos precisa de uma base Java 21 + Spr
 | D5 | Intervalo semiaberto `[início, fim)`, conflito quando `a < d AND c < b`, com UTC no banco. | Implementada pela consulta de sobreposição em `ReservationRepository`, pelas datas `TIMESTAMPTZ` e configuração JPA UTC; concorrência usa lock pessimista por recurso, conforme ADR 0002. Presente em `origin/develop`. |
 | D6 | Hash de senha com BCrypt. | Implementada pelo `PasswordEncoder` BCrypt e `LoginService`; testes de autenticação cobrem login e falhas. Presente em `origin/develop`. |
 | D7 | Interface `NotificationPort` com adaptador HTTP simulado. | Implementada por `NotificationPort` e `HttpNotificationAdapter`; a integração HTTP é configurável e testada com WireMock. Não há provedor externo de produção configurado. Presente em `origin/develop`. |
-| D8 | Página estática HTML/CSS/JS responsiva servida pelo Spring Boot. | Implementada em `origin/feat/16-frontend-rf13` (`src/main/resources/static/`); PR #1 está aberto para `develop`. Não está presente em `origin/develop` enquanto o PR não for integrado. A matriz completa de validação visual responsiva continua pendente. |
+| D8 | Página estática HTML/CSS/JS responsiva servida pelo Spring Boot. | Implementada em `src/main/resources/static/` e integrada em `develop` pelo merge do PR #1 (`8e5fb34`). A matriz completa de validação visual responsiva continua pendente. |
 
 ## Decisão de stack do Commit 01
 
@@ -52,4 +52,4 @@ Spring Security OAuth2 Resource Server/Nimbus valida JWT HS256 assinado com `JWT
 
 1. Registrar a validação formal de D1-D8 com o docente; a implementação observada não substitui essa confirmação acadêmica.
 2. SonarCloud continua sob responsabilidade de outro integrante e depende de configuração e execução remotas confirmadas.
-3. A interface D8 e a validação visual responsiva dependem da integração/revisão do PR #1; sua presença não deve ser inferida em `develop` antes do merge.
+3. A interface D8 está integrada; a validação visual responsiva completa continua pendente.
