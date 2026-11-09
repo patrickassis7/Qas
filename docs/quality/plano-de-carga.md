@@ -56,11 +56,6 @@ $runId = [guid]::NewGuid().ToString('N')
 $env:COMPOSE_PROJECT_NAME = "or-c15-$runId"
 $env:DB_NAME = 'or_commit15_load'
 $env:DB_USERNAME = 'or_load'
-$listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
-$listener.Start()
-$env:DB_PORT = [string]$listener.LocalEndpoint.Port
-$listener.Stop()
-$env:DB_URL = "jdbc:postgresql://127.0.0.1:$env:DB_PORT/$env:DB_NAME"
 $env:SPRING_PROFILES_ACTIVE = 'local'
 $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
 $dbBytes = New-Object byte[] 32
@@ -74,21 +69,39 @@ $env:DB_PASSWORD = [Convert]::ToBase64String($dbBytes)
 $env:LOCAL_SEED_PASSWORD = [Convert]::ToBase64String($seedBytes)
 $env:JWT_SECRET = [Convert]::ToBase64String($jwtBytes)
 $composeOverride = Join-Path $env:TEMP "or-c15-$runId-compose.yml"
-$overrideContent = @"
+$composeContent = @'
 services:
   postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:?DB_NAME must be set}
+      POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME must be set}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
     ports:
-      - "127.0.0.1:$($env:DB_PORT):5432"
-"@
-[System.IO.File]::WriteAllText($composeOverride, $overrideContent, [System.Text.UTF8Encoding]::new($false))
+      - "127.0.0.1::5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  postgres_data:
+'@
+[System.IO.File]::WriteAllText($composeOverride, $composeContent, [System.Text.UTF8Encoding]::new($false))
 $loadCsv = Join-Path $env:TEMP "or-c15-$runId-users.csv"
 $csvLine = '"professor.local@organizacao-recursos.local","' + $env:LOCAL_SEED_PASSWORD + '"'
 [System.IO.File]::WriteAllText($loadCsv, $csvLine, [System.Text.UTF8Encoding]::new($false))
 Write-Output "Dataset sintético: $loadCsv"
 Write-Output "Projeto Compose isolado: $env:COMPOSE_PROJECT_NAME"
-docker compose -f docker-compose.yml -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME up -d --wait postgres
+docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME up -d --wait postgres
 if ($LASTEXITCODE -ne 0) { throw 'PostgreSQL não ficou saudável.' }
-docker compose -f docker-compose.yml -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME ps
+$publishedPort = docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME port postgres 5432
+if ($LASTEXITCODE -ne 0 -or -not $publishedPort) { throw 'Não foi possível consultar a porta publicada.' }
+$env:DB_PORT = [string]($publishedPort -split ':')[-1]
+$env:DB_URL = "jdbc:postgresql://127.0.0.1:$env:DB_PORT/$env:DB_NAME"
+docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME ps
 .\mvnw.cmd --batch-mode --no-transfer-progress spring-boot:run
 ```
 
@@ -98,12 +111,13 @@ O último comando mantém a aplicação em execução. Os segredos ficam apenas 
 
 ```powershell
 $loadCsv = Read-Host 'Informe o caminho Dataset sintético impresso pelo Terminal 1'
-$credentials = Import-Csv -LiteralPath $loadCsv -Header email,password
+$credentials = @(Import-Csv -LiteralPath $loadCsv -Header email,password)
 $adminBody = @{ email = 'admin.local@organizacao-recursos.local'; password = $credentials[0].password } | ConvertTo-Json -Compress
 $adminLogin = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/api/v1/auth/login' -ContentType 'application/json' -Body $adminBody
 $adminHeaders = @{ Authorization = "Bearer $($adminLogin.accessToken)" }
-$resourceBody = @{ type = 'SALA'; name = "Carga $([guid]::NewGuid().ToString('N'))"; location = 'Ambiente sintético'; capacity = 20; skills = 'carga'; restricted = $false } | ConvertTo-Json -Compress
-$resource = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/api/v1/resources' -Headers $adminHeaders -ContentType 'application/json' -Body $resourceBody
+$resourceBody = @{ type = 'SALA'; name = "Carga $([guid]::NewGuid().ToString('N'))"; location = 'Ambiente sintetico'; capacity = 20; skills = 'carga'; restricted = $false } | ConvertTo-Json -Compress
+$resourceBytes = [System.Text.Encoding]::UTF8.GetBytes($resourceBody)
+$resource = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/api/v1/resources' -Headers $adminHeaders -ContentType 'application/json; charset=utf-8' -Body $resourceBytes
 $resourceId = $resource.id
 if (-not $resourceId) { throw 'A API não retornou o ID do recurso sintético.' }
 $health = Invoke-RestMethod -Uri 'http://localhost:8080/actuator/health'
@@ -152,7 +166,7 @@ if (-not $dbContainer) { throw 'Container PostgreSQL do projeto isolado não foi
 docker exec $dbContainer psql -U $dbUsername -d $dbName -c $sql
 ```
 
-Ao terminar, pare o Spring Boot com `Ctrl+C` no Terminal 1 e execute `docker compose -f docker-compose.yml -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME down` para remover somente os containers e a rede desse projeto; não use `-v`, pois o volume isolado deve ser preservado. Depois que a carga terminar e os agregados forem guardados sem segredo, remova somente o CSV e o override temporários criados por esta execução com `Remove-Item -LiteralPath $loadCsv, $composeOverride`. A aplicação, a carga e os dados de outros projetos não são encerrados nem alterados por esses comandos.
+Ao terminar, pare o Spring Boot com `Ctrl+C` no Terminal 1 e execute `docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME down` para remover somente os containers e a rede desse projeto; não use `-v`, pois o volume isolado deve ser preservado. Depois que a carga terminar e os agregados forem guardados sem segredo, remova somente o CSV e o arquivo Compose temporários criados por esta execução com `Remove-Item -LiteralPath $loadCsv, $composeOverride`. A aplicação, a carga e os dados de outros projetos não são encerrados nem alterados por esses comandos.
 
 ## Análise dos resultados
 
@@ -164,4 +178,8 @@ Ao terminar, pare o Spring Boot com `Ctrl+C` no Terminal 1 e execute `docker com
 
 ## Resultado desta execução
 
-Execução real contra a aplicação pendente. O JMX 5.6.3 foi carregado e iniciado com um alvo não roteável apenas para validar sua estrutura; não foram medidos percentis nem throughput da aplicação. A tentativa de inicializar um ambiente isolado para a carga foi bloqueada pela revisão automática de comandos (`blocked by policy`), então nenhum container/app foi iniciado por essa tentativa. Um roteiro manual PowerShell para PostgreSQL isolado, execução JMeter, classificação de 409 e consulta de integridade foi preparado acima; ainda não foi executado e não constitui evidência de carga. A análise SonarCloud fica com o integrante responsável por essa integração.
+Execução real concluída em 2026-11-09, contra o perfil `local` e PostgreSQL 16.15 em um projeto Compose/volume exclusivo, com porta publicada somente em `127.0.0.1`. O ambiente foi iniciado manualmente após o bloqueio anterior da orquestração automatizada; o roteiro PowerShell acima registra o procedimento que funcionou. JMeter 5.6.3 executou 55.812 amostras HTTP, todas concluídas com resposta: 55.792 pesquisas de recursos (todas 200, 0 erros, p50 4 ms, p95 7 ms, p99 9 ms, média 4,09 ms e throughput 933,99 req/s), 12 logins (todos 200) e 8 reservas concorrentes (1 HTTP 201 e 7 HTTP 409 esperados). O JMeter marca os 7 conflitos como `success=false`; não houve outra falha real, falha de transporte nem HTTP 500. No banco, houve uma reserva `APROVADA`, vinculada ao recurso, e zero reservas órfãs. O relatório HTML e o JTL foram mantidos em `%TEMP%` e não foram versionados.
+
+Ambiente observado: Windows 11 Home, AMD Ryzen 7 5700X, 15,9 GB de RAM, Java 21.0.13, Docker Engine 29.9.2 e PostgreSQL 16.15. Os resultados caracterizam somente esta execução local; não constituem SLO ou garantia de capacidade de produção. SonarCloud permanece com o integrante responsável.
+
+Durante a preparação, duas portas escolhidas previamente falharam com `address already in use` apesar de não haver listener visível. A execução prosseguiu após deixar o Docker alocar a porta publicada. A primeira tentativa de criar o recurso pelo PowerShell recebeu HTTP 400 `INVALID_REQUEST`; a repetição com corpo UTF-8 explícito foi aceita. Não houve alteração de código nem defeito de produto associado a esses dois problemas de preparação.
