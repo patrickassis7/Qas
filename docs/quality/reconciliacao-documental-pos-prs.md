@@ -7,6 +7,19 @@ Este registro não altera `README.md`, `RTM.md` ou `docs/RTM.md`. O primeiro é 
 
 ## RTM — reconciliar após a integração do PR #2
 
+### Resultado da auditoria comparativa
+
+Auditoria realizada em 2026-11-09 na branch `feat/docs-arquitetura-final`, HEAD `e0daa27765196dbabcbc2312fda39ba048bce5e2`; `origin/feat/docs-arquitetura-final` estava sincronizada. Os PRs consultados permaneceram abertos como Draft: PR #1 em `f37e95854e6964d86ec5606aa9ffc1a6fdc1a0e8` e PR #2 em `3705037666bb39ad0346de7e26fe4955084d13d9`.
+
+| Fonte | Conteúdo encontrado | Tratamento necessário |
+|---|---|---|
+| `RTM.md` na raiz desta branch | Contém linhas para RF-01 a RF-14, uma seleção de requisitos críticos, riscos/testes propostos, RN-01, RN-05, RN-07 e itens RNF-01 a RNF-07/RNF-09. O resumo `1 / 9` e os status são preliminares e não refletem as evidências do PR #2. | Preservar requisitos, riscos e conteúdo exclusivo útil; não transportar os status preliminares como resultados verificados. |
+| `docs/RTM.md` nesta branch | Contém linhas para RF-01 a RF-14, testes localizáveis, RN-01 a RN-08 e parte dos RNFs. Ainda registra 193 testes, JaCoCo 93,52%/77,27%, diz complementar a matriz da raiz e afirma que a interface visual não foi encontrada. | Não editar enquanto o PR #2 estiver aberto: o próprio arquivo é alterado por esse PR e seus dados já estão desatualizados em relação ao head dele. |
+| `docs/RTM.md` no head do PR #2 | Atualiza a suíte para 202 testes, JaCoCo para 93,64%/78,57%, incorpora resultados JMeter e evidências de segurança/paginação. Mantém as 14 linhas RF e a revisão humana. | Preservar esta versão e sua evidência ao integrar o PR #2; validar a integração antes de alterar a matriz canônica. |
+| Story 1.6 / frontend no PR #1 | O frontend foi implementado no head `f37e95854e6964d86ec5606aa9ffc1a6fdc1a0e8`; a matriz visual completa continua pendente. | Após integrar o PR #1, atualizar RF-13 para “implementação existente, validação visual parcial/pendente”, sem marcá-lo como verificado. |
+
+**Decisão nesta revisão:** não modificar `RTM.md` nem `docs/RTM.md`. Alterar somente a matriz raiz para um encaminhamento agora deixaria incorreta a frase de `docs/RTM.md` que diz complementá-la; editar a matriz detalhada agora se sobreporia às alterações ainda abertas do PR #2. Portanto, a RTM **não está consolidada nem finalizada**. A adoção efetiva de `docs/RTM.md` como canônica, a preservação das linhas exclusivas da raiz e a correção do estado RF-13 ficam condicionadas à integração/revisão dos PRs #1 e #2.
+
 1. Comparar a matriz resumida da raiz (`RTM.md`) com a matriz detalhada (`docs/RTM.md`). Ambas contêm requisitos e estados; a raiz tem linhas e riscos próprios, enquanto `docs/RTM.md` possui evidências por RF/RN e recebe as atualizações recentes do PR #2.
 2. Usar `docs/RTM.md` como artefato canônico, conforme a story 1.5, depois de copiar para ela todo conteúdo exclusivo útil da matriz raiz. Preservar requisitos, riscos, evidências, estados e histórico de revisão; não descartar linhas da raiz por inferência.
 3. Atualizar a matriz canônica com os resultados de 202 testes, JaCoCo 93,64%/78,57% e JMeter, usando as evidências do head integrado. Não marcar RF-13 visual, SonarCloud ou requisitos sem evidência como concluídos.
