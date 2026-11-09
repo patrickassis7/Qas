@@ -2,7 +2,7 @@
 
 ## Objetivo e escopo
 
-Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras RN-01 a RN-08, preservando os contratos do produto. O mapeamento requisito → risco → teste → evidência está em [`docs/RTM.md`](../RTM.md). Esta revisão não executou testes, conforme solicitação do usuário; os resultados permanecem pendentes.
+Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras RN-01 a RN-08, preservando os contratos do produto. O mapeamento requisito → risco → teste → evidência está em [`docs/RTM.md`](../RTM.md). Em 2026-11-09, `./mvnw --batch-mode --no-transfer-progress clean verify` passou com 193 testes, sem falhas, erros ou skips.
 
 ## Estratégia por camada
 
@@ -31,7 +31,16 @@ Execução local completa:
 ./mvnw --batch-mode --no-transfer-progress clean verify
 ```
 
-O `verify` deve gerar JaCoCo XML/HTML em `target/site/jacoco/` e falhar se a cobertura de produção ficar abaixo de 80% de linhas ou 70% de branches. O CI executa o mesmo comando. Para diagnóstico restrito, Maven Surefire aceita `-Dtest=NomeDaClasse`, mas esse resultado não substitui `clean verify`.
+O `verify` gera JaCoCo XML/HTML em `target/site/jacoco/` e falha se a cobertura de produção ficar abaixo de 80% de linhas ou 70% de branches. O CI executa o mesmo comando. Para diagnóstico restrito, Maven Surefire aceita `-Dtest=NomeDaClasse`, mas esse resultado não substitui `clean verify`.
+
+Resultado observado: 93,52% de linhas (1053/1126) e 77,27% de branches (204/264). O gate real passou. Os bloqueios individuais foram demonstrados sem repetir testes, usando os dados da execução recém-gerada:
+
+```bash
+./mvnw --batch-mode --no-transfer-progress jacoco:check@check-coverage -Djacoco.minimum.lines=0.94 -Djacoco.minimum.branches=0.70
+./mvnw --batch-mode --no-transfer-progress jacoco:check@check-coverage -Djacoco.minimum.lines=0.80 -Djacoco.minimum.branches=0.78
+```
+
+O primeiro comando falhou por linhas (93,52% < 94%); o segundo falhou por branches (77,27% < 78%). Ambos retornaram `BUILD FAILURE` por `Coverage checks have not been met`.
 
 SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY` estiverem configurados e uma análise efetiva produzir evidência. A configuração ausente mantém o item pendente.
 
@@ -46,7 +55,7 @@ SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGAN
 
 ## Limitações desta revisão
 
-- Nenhum teste foi executado nesta finalização por solicitação do usuário. O comando de gate, o E2E e os testes criados/alterados ainda precisam de execução após os ajustes de autorização e formatação.
-- O último resultado disponível para `ResourceMaintenanceIntegrationTest` precede esses ajustes e não certifica o estado atual.
+- A suíte completa e o E2E foram executados após os ajustes: 193/193 testes aprovados; `ResourceMaintenanceIntegrationTest` 2/2 e `PublicApiWorkflowEndToEndTest` 1/1.
+- A cobertura passou os limites atuais. SonarCloud não foi executado porque as variáveis de configuração necessárias não estão presentes no ambiente local.
 - Não há interface visual para verificar responsividade; RF-13 permanece pendente.
-- SonarCloud e revisão humana da RTM não foram realizados.
+- Revisão humana da RTM não foi realizada e permanece pendente.

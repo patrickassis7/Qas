@@ -1,34 +1,40 @@
 schema: 1
 story: '1.5'
 gate: FAIL
-status_reason: 'Acceptance criteria requiring final verification and human review remain unproven; the story cannot be approved based on static inspection alone.'
-reviewer: Quinn
-reviewed_revision: 'commit:212816b; reviewed staged and unstaged working-tree diff'
-updated: '2026-11-09T01:11:50Z'
+status_reason: 'AC10 remains unmet: the RTM has no explicit human-review record with reviewer, date, and outcome. The Maven, JaCoCo, and defect-retest results reported by the executor resolve the prior execution findings, but this required acceptance criterion blocks approval.'
+reviewer: 'Quinn (Test Architect)'
+reviewed_revision: 'commit:cc47684; pre-review-doc-diff-sha256:f0124f453876308a98248c82a3b3e400ecf5d56eab91306648be8a350ecf097c'
+updated: '2026-11-09T01:31:58Z'
 top_issues:
-  - id: TEST-001
+  - id: REQ-003
     severity: high
-    finding: 'The final Maven verification and the added or changed tests have not been executed; AC 2, AC 3, and AC 7 have no final execution evidence.'
-    suggested_action: 'After execution is authorized, run the full Maven verification and record its result and reports before requesting QA again.'
-  - id: TEST-002
-    severity: high
-    finding: 'JaCoCo thresholds are present in pom.xml and CI invokes clean verify, but there is no evidence that the gate fails below either threshold and succeeds when both thresholds are met.'
-    suggested_action: 'Demonstrate and preserve evidence for both below-threshold failure and above-threshold success.'
-  - id: TEST-003
-    severity: medium
-    finding: 'DEF-006 and DEF-007 are marked corrected, but their final retests remain pending.'
-    suggested_action: 'Retest both corrections and update docs/quality/defects.md with observable results.'
-  - id: REQ-001
-    severity: medium
-    finding: 'The RTM has no explicit human review record; AC 10 is not met.'
-    suggested_action: 'Obtain a human review and record reviewer, date, and outcome in the designated review record.'
-  - id: DOC-001
-    severity: medium
-    finding: 'SonarCloud was not executed, and the current artifacts do not evidence an operational analysis.'
-    suggested_action: 'Record whether SonarCloud is operational; if it is, attach the analysis result, otherwise retain the documented pending reason.'
-  - id: REQ-002
-    severity: medium
-    finding: 'RF-13 visual responsiveness remains unverified because no inspectable UI is available; API tests do not establish visual behavior.'
-    suggested_action: 'Keep RF-13 pending until a UI is available and visual/responsive evidence can be reviewed.'
+    finding: 'AC10 is not met: docs/RTM.md explicitly leaves human review pending and contains no reviewer, date, or review outcome. QA static inspection and test execution do not substitute for the required human review.'
+    suggested_action: 'Obtain and record an explicit human review of docs/RTM.md, including reviewer, date, and outcome, then request QA re-review.'
+    suggested_owner: po
 waiver:
   active: false
+quality_score: 80
+evidence:
+  tests_reviewed: 2
+  risks_identified: 1
+  execution_reported_by_executor:
+    clean_verify: '193 tests; 0 failures, 0 errors, 0 skipped'
+    jacoco: '93.52% lines (1053/1126); 77.27% branches (204/264); configured 80%/70% gate passed'
+    threshold_checks: '94% line threshold failed and 78% branch threshold failed on the newly generated jacoco.exec'
+    targeted_retests: 'ResourceMaintenanceIntegrationTest 2/2; PublicApiWorkflowEndToEndTest 1/1'
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: [10]
+  review_limits:
+    - 'Static review only; QA did not rerun tests or build.'
+    - 'SonarCloud is not configured locally; AC9 remains pending as documented.'
+    - 'No UI is available for visual/responsive inspection; RF-13 remains pending as documented.'
+recommendations:
+  immediate:
+    - action: 'Record the required explicit human review of the RTM, including reviewer, date, and outcome.'
+      refs: ['docs/RTM.md']
+  future:
+    - action: 'Review RF-13 visually when an inspectable UI is available.'
+      refs: ['docs/RTM.md', 'docs/quality/plano-de-testes.md']
+    - action: 'Run SonarCloud when repository credentials and project identifiers are configured.'
+      refs: ['.github/workflows/ci.yml']
