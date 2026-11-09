@@ -1,6 +1,6 @@
 # Matriz de Rastreabilidade
 
-Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09, `./mvnw.cmd --batch-mode --no-transfer-progress clean verify` passou com 202 testes, zero falhas/erros/ignorados. JaCoCo mediu 93,64% de linhas (1074/1147) e 78,57% de branches (220/280). Isso comprova o gate de cobertura, mas não declara cobertura funcional de 100%; evidência visual de RF-13 e SonarCloud seguem pendentes. A carga JMeter real está registrada em `docs/quality/plano-de-carga.md`. A revisão humana da RTM foi aprovada por `@patrickassis7` em 2026-11-09.
+Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09, `./mvnw.cmd --batch-mode --no-transfer-progress clean verify` passou com 202 testes, zero falhas/erros/ignorados. JaCoCo mediu 93,64% de linhas (1074/1147) e 78,57% de branches (220/280). Isso comprova o gate de cobertura, mas não declara cobertura funcional de 100%. A evidência visual manual reportada para RF-13 está descrita na story 1.6; SonarCloud segue pendente. A carga JMeter real está registrada em `docs/quality/plano-de-carga.md`. A revisão humana da RTM foi aprovada por `@patrickassis7` em 2026-11-09.
 
 | Requisito | Risco | Teste e evidência localizável | Status nesta revisão |
 |---|---|---|---|
@@ -16,7 +16,7 @@ Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09
 | RF-10 Histórico auditável | Mudança sem evento ou exposição de credenciais | `src/test/java/br/com/organizacaorecursos/integration/IdentityAuditIntegrationTest.java`; `src/test/java/br/com/organizacaorecursos/integration/ResourceMaintenanceIntegrationTest.java` | Suíte aprovada em clean verify |
 | RF-11 Notificação simulada | Falha externa reverte a reserva ou notificação não é enviada | `src/test/java/br/com/organizacaorecursos/integration/ApprovalIntegrationTest.java` | Suíte aprovada com WireMock em clean verify |
 | RF-12 Relatório de utilização | Horas, percentuais ou conflitos evitados calculados incorretamente | `src/test/java/br/com/organizacaorecursos/integration/UtilizationReportIntegrationTest.java` | Suíte aprovada em clean verify |
-| RF-13 Interface responsiva e erros compreensíveis | Interface inacessível em telas menores ou erros incompreensíveis | Interface visual não encontrada; mensagens API em `src/main/java/br/com/organizacaorecursos/shared/api/GlobalExceptionHandler.java` | Pendente de interface/evidência visual; API não prova responsividade |
+| RF-13 Interface responsiva e erros compreensíveis | Interface inacessível em telas menores ou erros incompreensíveis | Validação visual manual reportada pelo usuário e registrada em [story 1.6](stories/1.6-commit-16-frontend-rf13.md); mensagens API em `src/main/java/br/com/organizacaorecursos/shared/api/GlobalExceptionHandler.java` | Evidência manual reportada: telas verificadas nas seis larguras; sem capturas preservadas. Testes automatizados e mensagens API são evidência complementar, não substituem a inspeção visual. |
 | RF-14 Documentação de API/fluxos | Contratos implementados divergem da documentação | `README.md`; `docs/quality/plano-de-testes.md`; OpenAPI em `/v3/api-docs` | Documentado e suíte aprovada; revisão humana da RTM aprovada em 2026-11-09 |
 
 ## Regras e qualidade relacionadas
@@ -45,5 +45,5 @@ Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09
 - Clean verify em 2026-11-09 executou 202 testes: 202 passaram, 0 falhas, 0 erros, 0 ignorados.
 - JMeter 5.6.3: carga local real concluída; 55.792 pesquisas HTTP 200, p50 4 ms, p95 7 ms, p99 9 ms e throughput 933,99 req/s. Colisão resultou em um 201, sete 409 esperados, zero 500 e nenhuma reserva órfã. Evidência agregada em `docs/quality/plano-de-carga.md`; resultados brutos permanecem fora do Git.
 - SonarCloud depende de configuração externa e não foi executado nesta revisão.
-- RF-13 permanece pendente enquanto não houver interface verificável.
+- RF-13 tem validação visual manual reportada nesta revisão; a evidência e sua limitação (sem capturas preservadas) estão na story 1.6.
 - Revisão humana da RTM: aprovada por `@patrickassis7` em 2026-11-09, confirmação explícita registrada nesta sessão.

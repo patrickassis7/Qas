@@ -13,7 +13,7 @@ Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras 
 | Integração externa | Envio de aprovação/rejeição/cancelamento e resposta HTTP/timeout | WireMock; `ApprovalIntegrationTest` |
 | API caixa-preta | Rotas HTTP, status, payload, autenticação/autorização, filtros e erros | MockMvc nos testes de integração; dados sintéticos e banco isolado por classe |
 | Ponta a ponta | Login → pesquisar → reservar recurso restrito → aprovar → retirar/iniciar → devolver/concluir → consultar auditoria | `PublicApiWorkflowEndToEndTest`, `TestRestTemplate`, servidor HTTP aleatório e PostgreSQL Testcontainers |
-| Interface visual | Responsividade e inspeção visual de mensagens | Pendente: não há interface estática verificável no escopo atual; não substituir por teste de API |
+| Interface visual | Responsividade e inspeção visual de mensagens | Validação manual reportada pelo usuário em Chrome DevTools: login, navegação, recursos, reservas, formulários e mensagens de erro; overflow retornou `true` em 320, 375, 390, 768, 1024 e 1440 px. Sem capturas preservadas; consultar [story 1.6](../stories/1.6-commit-16-frontend-rf13.md). |
 
 ## Dados e isolamento
 
@@ -57,5 +57,6 @@ SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGAN
 
 - A suíte completa e o E2E foram executados após os ajustes: 193/193 testes aprovados; `ResourceMaintenanceIntegrationTest` 2/2 e `PublicApiWorkflowEndToEndTest` 1/1.
 - A cobertura passou os limites atuais. SonarCloud não foi executado porque as variáveis de configuração necessárias não estão presentes no ambiente local.
-- Não há interface visual para verificar responsividade; RF-13 permanece pendente.
+- RF-13: o usuário reportou validação visual manual das telas e larguras listadas na tabela; automação de navegador e capturas de tela não foram produzidas nesta execução. Ver [story 1.6](../stories/1.6-commit-16-frontend-rf13.md).
+- Revalidação em 2026-11-09: `.\mvnw.cmd --batch-mode --no-transfer-progress clean verify` passou com 202 testes, 0 falhas, 0 erros e 0 ignorados. JaCoCo: 93,64% de linhas (1074/1147) e 78,57% de branches (220/280).
 - A RTM recebeu revisão humana aprovada por `@patrickassis7` em 2026-11-09.
