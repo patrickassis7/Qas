@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102a43">
+  <meta name="description" content="Organização de Recursos — gestão acadêmica de espaços, materiais e reservas.">
+  <title>Organização de Recursos</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
+  <section class="login-screen" id="login-screen" aria-labelledby="login-title">
+    <div class="login-aside">
+      <div class="brand brand-light"><span class="brand-mark" aria-hidden="true">OR</span><span>Organização<br>de Recursos</span></div>
+      <div class="login-message">
+        <p class="eyebrow">GESTÃO ACADÊMICA</p>
+        <h1>Os recursos certos para cada momento.</h1>
+        <p>Consulte espaços e materiais, acompanhe suas solicitações e organize sua rotina acadêmica.</p>
+      </div>
+      <p class="login-footnote">Acesso destinado à comunidade acadêmica.</p>
+    </div>
+    <div class="login-panel">
+      <form id="login-form" class="login-form">
+        <p class="eyebrow">BEM-VINDO(A)</p>
+        <h2 id="login-title">Acesse sua conta</h2>
+        <p class="muted">Entre com suas credenciais institucionais.</p>
+        <label for="login-email">E-mail</label>
+        <input id="login-email" name="email" type="email" autocomplete="username" required maxlength="254" placeholder="nome@instituicao.edu.br">
+        <label for="login-password">Senha</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Sua senha">
+        <button class="button button-primary button-wide" type="submit">Entrar <span aria-hidden="true">→</span></button>
+        <p class="form-message" id="login-error" role="alert" aria-live="polite"></p>
+      </form>
+      <p class="login-note">Se não conseguir acessar, procure o administrador do sistema.</p>
+    </div>
+  </section>
+
+  <div class="app-shell" id="app-shell" hidden>
+    <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">OR</span><span>Organização<br>de Recursos</span></div>
+      <p class="nav-label">MENU</p>
+      <nav class="side-nav">
+        <button class="nav-link is-active" type="button" data-view="dashboard"><span class="nav-icon" aria-hidden="true">⌂</span>Visão geral</button>
+        <button class="nav-link" type="button" data-view="resources"><span class="nav-icon" aria-hidden="true">▦</span>Recursos</button>
+        <button class="nav-link" type="button" data-view="availability"><span class="nav-icon" aria-hidden="true">◷</span>Disponibilidade</button>
+        <button class="nav-link" type="button" data-view="reservations"><span class="nav-icon" aria-hidden="true">▤</span>Minhas reservas</button>
+        <button class="nav-link capability-admin" type="button" data-view="admin" hidden><span class="nav-icon" aria-hidden="true">⚙</span>Gestão de recursos</button>
+        <button class="nav-link capability-operator" type="button" data-view="approvals" hidden><span class="nav-icon" aria-hidden="true">✓</span>Acompanhamento</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="profile-card"><span class="avatar" id="profile-avatar">U</span><span class="profile-copy"><strong id="profile-name">Sessão</strong><small id="profile-role">Usuário autenticado</small></span></div>
+        <button class="nav-link logout-button" id="logout-button" type="button"><span class="nav-icon" aria-hidden="true">↗</span>Sair</button>
+      </div>
+    </aside>
+
+    <div class="main-column">
+      <header class="topbar">
+        <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Abrir navegação" aria-expanded="false">☰</button>
+        <div class="topbar-context"><span class="topbar-kicker">PORTAL ACADÊMICO</span><strong id="topbar-title">Visão geral</strong></div>
+        <div class="topbar-right"><span class="status-dot" id="api-status-dot" aria-hidden="true"></span><span id="api-status-text">Verificando API</span></div>
+      </header>
+      <main id="main-content" class="content-area">
+        <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+        <section class="view is-visible" id="view-dashboard" aria-labelledby="page-title">
+          <div class="page-heading"><div><p class="eyebrow">SEU ESPAÇO DE TRABALHO</p><h1 id="page-title">Visão geral</h1><p class="muted">Acompanhe recursos e reservas em um só lugar.</p></div><button class="button button-primary" type="button" data-go="availability">+ Nova reserva</button></div>
+          <div class="metric-grid" id="dashboard-metrics"><article class="metric-card"><span class="metric-label">Recursos cadastrados</span><strong class="metric-value">—</strong><span class="metric-caption">Consultando API…</span></article><article class="metric-card"><span class="metric-label">Minhas reservas</span><strong class="metric-value">—</strong><span class="metric-caption">Consultando API…</span></article><article class="metric-card"><span class="metric-label">Solicitações pendentes</span><strong class="metric-value">—</strong><span class="metric-caption">Da página atual</span></article></div>
+          <div class="dashboard-grid">
+            <section class="panel panel-large"><div class="panel-heading"><div><h2>Reservas recentes</h2><p class="muted">Dados carregados da sua consulta de reservas.</p></div><button class="text-button" type="button" data-go="reservations">Ver todas <span aria-hidden="true">→</span></button></div><div id="dashboard-reservations" class="table-wrap"></div></section>
+            <aside class="panel tip-panel"><div class="tip-icon" aria-hidden="true">✦</div><p class="eyebrow">DICA</p><h2>Planeje com antecedência</h2><p class="muted">Consulte a disponibilidade antes de solicitar um recurso. Reservas de recursos restritos passam por aprovação.</p><button class="button button-secondary" type="button" data-go="availability">Consultar horários</button></aside>
+          </div>
+        </section>
+
+        <section class="view" id="view-resources" aria-labelledby="resources-title">
+          <div class="page-heading"><div><p class="eyebrow">CATÁLOGO ACADÊMICO</p><h1 id="resources-title">Pesquisar recursos</h1><p class="muted">Encontre salas, professores e materiais cadastrados.</p></div><button class="button button-primary" type="button" data-go="availability">Consultar disponibilidade</button></div>
+          <form class="filter-bar" id="resource-search-form"><label>Localização<input name="location" type="search" placeholder="Ex.: Bloco A, Laboratório…"></label><label>Tipo<select name="type"><option value="">Todos os tipos</option><option value="SALA">Sala</option><option value="PROFESSOR">Professor</option><option value="MATERIAL">Material</option></select></label><label>Capacidade mínima<input name="minimumCapacity" type="number" min="1" inputmode="numeric" placeholder="Qualquer"></label><label>Competência<input name="skill" type="search" placeholder="Ex.: Física"></label><button class="button button-primary" type="submit">Buscar</button></form>
+          <div class="section-heading"><div><h2>Resultados</h2><p class="muted" id="resources-count">Carregando recursos…</p></div><button class="button button-quiet" id="clear-resource-filters" type="button">Limpar filtros</button></div><div class="resource-grid" id="resource-results"></div><div class="pagination" id="resource-pagination"></div>
+        </section>
+
+        <section class="view" id="view-availability" aria-labelledby="availability-title">
+          <div class="page-heading"><div><p class="eyebrow">AGENDA</p><h1 id="availability-title">Disponibilidade e reserva</h1><p class="muted">Escolha um período para consultar recursos livres e fazer sua solicitação.</p></div></div>
+          <form class="panel form-panel" id="reservation-form"><div class="form-section-title"><span class="step-number">1</span><div><h2>Defina o período</h2><p class="muted">Os horários são enviados à API em UTC.</p></div></div>
+            <div class="form-grid"><label>Início<input name="startAt" type="datetime-local" required></label><label>Fim<input name="endAt" type="datetime-local" required></label></div>
+            <button class="button button-secondary" id="check-availability" type="button">Consultar disponibilidade</button>
+            <div class="form-section-title section-spaced"><span class="step-number">2</span><div><h2>Selecione os recursos</h2><p class="muted">A consulta de disponibilidade não substitui a confirmação no envio.</p></div></div>
+            <div id="available-resources" class="selection-list"><p class="empty-state">Informe o período e consulte os recursos disponíveis.</p></div>
+            <label class="full-field">Justificativa <span class="optional">(opcional)</span><textarea name="justification" rows="3" maxlength="500" placeholder="Conte brevemente o objetivo da reserva"></textarea><small class="field-hint">Até 500 caracteres.</small></label>
+            <div class="form-actions"><button class="button button-primary" type="submit">Enviar solicitação</button></div>
+          </form>
+        </section>
+
+        <section class="view" id="view-reservations" aria-labelledby="reservations-title">
+          <div class="page-heading"><div><p class="eyebrow">ACOMPANHAMENTO</p><h1 id="reservations-title">Minhas reservas</h1><p class="muted">Consulte e acompanhe as reservas disponíveis para sua conta.</p></div><button class="button button-primary" type="button" data-go="availability">+ Nova reserva</button></div>
+          <div class="filter-inline"><label for="reservation-status-filter">Filtrar status nesta página</label><select id="reservation-status-filter"><option value="">Todos</option><option>SOLICITADA</option><option>APROVADA</option><option>EM_USO</option><option>CONCLUIDA</option><option>REJEITADA</option><option>CANCELADA</option><option>NAO_COMPARECEU</option></select></div>
+          <div class="panel table-panel"><div class="table-wrap" id="reservation-results"></div><div class="pagination" id="reservation-pagination"></div></div>
+        </section>
+
+        <section class="view" id="view-admin" aria-labelledby="admin-title">
+          <div class="page-heading"><div><p class="eyebrow">ADMINISTRAÇÃO</p><h1 id="admin-title">Gestão de recursos</h1><p class="muted">Cadastre, atualize ou desative recursos.</p></div></div>
+          <form class="panel form-panel compact-form" id="resource-form"><div class="form-section-title"><span class="step-number">✦</span><div><h2 id="resource-form-title">Cadastrar recurso</h2><p class="muted">Os campos e validações finais são definidos pela API.</p></div></div><input type="hidden" name="id"><div class="form-grid form-grid-three">
+            <label>Tipo<select name="type" required><option value="">Selecione</option><option value="SALA">Sala</option><option value="PROFESSOR">Professor</option><option value="MATERIAL">Material</option></select></label><label class="span-two">Nome<input name="name" required maxlength="150" placeholder="Ex.: Laboratório de Ciências"></label><label>Localização<input name="location" placeholder="Bloco, sala ou campus"></label><label>Capacidade<input name="capacity" type="number" min="1" placeholder="Não se aplica"></label><label>Competências<input name="skills" placeholder="Separe por vírgulas"></label><label class="checkbox-label"><input name="restricted" type="checkbox"> Requer aprovação</label><label class="span-two">ID do responsável <span class="optional">(UUID opcional)</span><input name="responsibleId" placeholder="Informe o UUID existente"></label>
+          </div><div class="form-actions"><button class="button button-primary" type="submit" id="resource-submit">Cadastrar recurso</button><button class="button button-quiet" type="button" id="resource-cancel-edit" hidden>Cancelar edição</button></div></form>
+          <div class="section-heading"><div><h2>Recursos cadastrados</h2><p class="muted">Ações disponíveis para administradores.</p></div></div><div class="panel table-panel"><div class="table-wrap" id="admin-resource-results"></div></div>
+        </section>
+
+        <section class="view" id="view-approvals" aria-labelledby="approvals-title">
+          <div class="page-heading"><div><p class="eyebrow">OPERAÇÃO</p><h1 id="approvals-title">Acompanhamento</h1><p class="muted">A API valida se você é responsável pelo recurso ou administrador.</p></div></div>
+          <div class="notice notice-info"><strong>Sobre a consulta</strong><p>O backend ainda não oferece uma fila de solicitações para responsáveis nem permite consultar reservas de terceiros por perfil. Responsáveis podem executar uma ação usando o UUID da reserva que receberam por outro canal institucional. Administradores veem a listagem autorizada pela API.</p></div>
+          <form class="panel action-panel" id="approval-form"><h2>Executar ação em uma reserva</h2><div class="form-grid"><label>UUID da reserva<input name="reservationId" required placeholder="00000000-0000-0000-0000-000000000000"></label><label>Ação<select name="action" required><option value="approve">Aprovar</option><option value="reject">Rejeitar</option><option value="start">Registrar retirada / início</option><option value="complete">Registrar devolução / conclusão</option><option value="no-show">Registrar não comparecimento</option></select></label><label class="full-field">Observação <span class="optional">(opcional)</span><input name="note" maxlength="500" placeholder="Até 500 caracteres"></label></div><button class="button button-primary" type="submit">Confirmar ação</button></form>
+          <div class="admin-reservation-list" id="operator-reservations" hidden><div class="section-heading"><div><h2>Reservas consultáveis</h2><p class="muted">Listagem real permitida ao perfil administrador.</p></div></div><div class="panel table-panel"><div class="table-wrap" id="operator-reservation-results"></div><div class="pagination" id="operator-reservation-pagination"></div></div></div>
+        </section>
+        <footer class="app-footer"><span>Organização de Recursos</span><span>Projeto acadêmico · API v1</span></footer>
+      </main>
+    </div>
+  </div>
+  <div class="mobile-scrim" id="mobile-scrim" hidden></div>
+</body>
+</html>
