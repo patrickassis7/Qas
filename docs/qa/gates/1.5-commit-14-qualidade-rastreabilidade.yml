@@ -1,37 +1,54 @@
 schema: 1
 story: '1.5'
-gate: FAIL
-status_reason: 'AC10 remains unmet: the RTM has no explicit human-review record with reviewer, date, and outcome. The Maven, JaCoCo, and defect-retest results reported by the executor resolve the prior execution findings, but this required acceptance criterion blocks approval.'
+story_title: 'Commit 14 - Qualidade, testes e rastreabilidade'
+gate: CONCERNS
+status_reason: 'The explicit human RTM approval resolves the previous gate blocker and reported test, coverage, and defect-retest evidence meets the story gates. CONCERNS remains because the RTM still labels that review pending in its summary, RF-14, and RNF-08.'
 reviewer: 'Quinn (Test Architect)'
-reviewed_revision: 'commit:cc47684; pre-review-doc-diff-sha256:f0124f453876308a98248c82a3b3e400ecf5d56eab91306648be8a350ecf097c'
-updated: '2026-11-09T01:31:58Z'
+reviewed_revision: 'commit:3b31681; pre-review-doc-diff-sha256:f42c128c0abc96caf6fa21f1af4a977f91e62024aba04f186e21d73c9de89fcf'
+updated: '2026-11-09T01:39:57Z'
+expires: '2026-11-23T01:39:57Z'
 top_issues:
-  - id: REQ-003
-    severity: high
-    finding: 'AC10 is not met: docs/RTM.md explicitly leaves human review pending and contains no reviewer, date, or review outcome. QA static inspection and test execution do not substitute for the required human review.'
-    suggested_action: 'Obtain and record an explicit human review of docs/RTM.md, including reviewer, date, and outcome, then request QA re-review.'
-    suggested_owner: po
+  - id: DOC-001
+    severity: medium
+    finding: 'docs/RTM.md records human approval at the end but still says the review is pending in the opening summary, RF-14, and RNF-08.'
+    suggested_action: 'Align the RTM status statements with the explicit approval record.'
+    suggested_owner: dev
 waiver:
   active: false
-quality_score: 80
+quality_score: 90
 evidence:
-  tests_reviewed: 2
+  tests_reviewed: 3
   risks_identified: 1
   execution_reported_by_executor:
     clean_verify: '193 tests; 0 failures, 0 errors, 0 skipped'
     jacoco: '93.52% lines (1053/1126); 77.27% branches (204/264); configured 80%/70% gate passed'
-    threshold_checks: '94% line threshold failed and 78% branch threshold failed on the newly generated jacoco.exec'
-    targeted_retests: 'ResourceMaintenanceIntegrationTest 2/2; PublicApiWorkflowEndToEndTest 1/1'
+    threshold_checks: '94% line threshold failed and 78% branch threshold failed as expected'
+    targeted_retests: 'ResourceMaintenanceIntegrationTest 2/2; PublicApiWorkflowEndToEndTest 1/1; DEF-006/007 retested'
+    human_rtm_review: 'Approved by @patrickassis7 on 2026-11-09; explicitly recorded in docs/RTM.md'
   trace:
-    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    ac_gaps: [10]
+    ac_covered: [2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: [1]
+  nfr_validation:
+    security:
+      status: PASS
+      notes: 'No new security finding in the reviewed artifacts; this static review is not a full security audit.'
+    performance:
+      status: PASS
+      notes: 'No new performance concern identified in the documented scope; no performance run was part of this QA review.'
+    reliability:
+      status: PASS
+      notes: 'Reported clean verify and targeted integration/E2E retests passed; not rerun by QA.'
+    maintainability:
+      status: CONCERNS
+      notes: 'RTM contains contradictory current-state statements about the explicit human review.'
   review_limits:
-    - 'Static review only; QA did not rerun tests or build.'
+    - 'Static review only; QA did not rerun tests, build, SonarCloud, or CodeRabbit.'
+    - 'Execution results are reported by the executor and recorded in the artifacts; QA did not reproduce them.'
     - 'SonarCloud is not configured locally; AC9 remains pending as documented.'
     - 'No UI is available for visual/responsive inspection; RF-13 remains pending as documented.'
 recommendations:
   immediate:
-    - action: 'Record the required explicit human review of the RTM, including reviewer, date, and outcome.'
+    - action: 'Align the RTM summary, RF-14, and RNF-08 status with the explicit human approval record.'
       refs: ['docs/RTM.md']
   future:
     - action: 'Review RF-13 visually when an inspectable UI is available.'

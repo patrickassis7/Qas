@@ -1,6 +1,6 @@
 # Matriz de Rastreabilidade
 
-Esta matriz complementa o arquivo raiz `RTM.md` para o Commit 14; não o substitui. Em 2026-11-09, `./mvnw --batch-mode --no-transfer-progress clean verify` passou com 193 testes, zero falhas/erros/ignorados. JaCoCo mediu 93,52% de linhas (1053/1126) e 77,27% de branches (204/264). Isso comprova o gate de cobertura, mas não declara cobertura funcional de 100%; RF-13, SonarCloud e revisão humana seguem pendentes.
+Esta matriz complementa o arquivo raiz `RTM.md` para o Commit 14; não o substitui. Em 2026-11-09, `./mvnw --batch-mode --no-transfer-progress clean verify` passou com 193 testes, zero falhas/erros/ignorados. JaCoCo mediu 93,52% de linhas (1053/1126) e 77,27% de branches (204/264). Isso comprova o gate de cobertura, mas não declara cobertura funcional de 100%; RF-13 visual e SonarCloud seguem pendentes. A revisão humana da RTM foi aprovada por `@patrickassis7` em 2026-11-09.
 
 | Requisito | Risco | Teste e evidência localizável | Status nesta revisão |
 |---|---|---|---|
@@ -17,7 +17,7 @@ Esta matriz complementa o arquivo raiz `RTM.md` para o Commit 14; não o substit
 | RF-11 Notificação simulada | Falha externa reverte a reserva ou notificação não é enviada | `src/test/java/br/com/organizacaorecursos/integration/ApprovalIntegrationTest.java` | Suíte aprovada com WireMock em clean verify |
 | RF-12 Relatório de utilização | Horas, percentuais ou conflitos evitados calculados incorretamente | `src/test/java/br/com/organizacaorecursos/integration/UtilizationReportIntegrationTest.java` | Suíte aprovada em clean verify |
 | RF-13 Interface responsiva e erros compreensíveis | Interface inacessível em telas menores ou erros incompreensíveis | Interface visual não encontrada; mensagens API em `src/main/java/br/com/organizacaorecursos/shared/api/GlobalExceptionHandler.java` | Pendente de interface/evidência visual; API não prova responsividade |
-| RF-14 Documentação de API/fluxos | Contratos implementados divergem da documentação | `README.md`; `docs/quality/plano-de-testes.md`; OpenAPI em `/v3/api-docs` | Documentado; suíte Maven aprovada; revisão humana pendente |
+| RF-14 Documentação de API/fluxos | Contratos implementados divergem da documentação | `README.md`; `docs/quality/plano-de-testes.md`; OpenAPI em `/v3/api-docs` | Documentado e suíte aprovada; revisão humana da RTM aprovada em 2026-11-09 |
 
 ## Regras e qualidade relacionadas
 
@@ -32,10 +32,10 @@ Esta matriz complementa o arquivo raiz `RTM.md` para o Commit 14; não o substit
 | RN-07 | RF-04: reserva iniciada não é excluída | `ReservationIntegrationTest` | Suíte aprovada em clean verify |
 | RN-08 | RF-10: mudanças de estado geram auditoria | `IdentityAuditIntegrationTest`, `ApprovalIntegrationTest` | Suíte aprovada em clean verify |
 | RNF-01 | Cobertura mínima JaCoCo | `pom.xml`, `.github/workflows/ci.yml`, `target/site/jacoco/jacoco.csv` | 93,52% linhas e 77,27% branches; gate 80%/70% aprovado; falhas isoladas comprovadas |
-| RNF-05 | Segurança e tratamento seguro de erros | `AuthIntegrationTest`, `IdentityAuditIntegrationTest`, `GlobalExceptionHandler` | Execução final pendente |
+| RNF-05 | Segurança e tratamento seguro de erros | `AuthIntegrationTest`, `IdentityAuditIntegrationTest`, `GlobalExceptionHandler` | Suíte aprovada em clean verify; sem alegação de auditoria completa |
 | RNF-06 | Testes com PostgreSQL/WireMock | `PostgresIntegrationTestSupport`, `ApprovalIntegrationTest` | Suíte aprovada com Testcontainers/WireMock |
 | RNF-07 | Evidência de TDD/BDD | Histórico de desenvolvimento | Pendente de evidência revisável |
-| RNF-08 | Rastreabilidade | Esta matriz | Parcial; revisor humano pendente |
+| RNF-08 | Rastreabilidade | Esta matriz | Revisão humana aprovada por `@patrickassis7` em 2026-11-09; rastreabilidade funcional parcial conforme evidências por RF |
 
 ## Gate e revisão
 
@@ -45,4 +45,4 @@ Esta matriz complementa o arquivo raiz `RTM.md` para o Commit 14; não o substit
 - Clean verify executou 193 testes: 193 passaram, 0 falhas, 0 erros, 0 ignorados.
 - SonarCloud depende de configuração externa e não foi executado nesta revisão.
 - RF-13 permanece pendente enquanto não houver interface verificável.
-- Revisão humana da RTM: pendente. Revisor, data e resultado não foram inferidos.
+- Revisão humana da RTM: aprovada por `@patrickassis7` em 2026-11-09, confirmação explícita registrada nesta sessão.

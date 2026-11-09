@@ -58,4 +58,4 @@ SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGAN
 - A suíte completa e o E2E foram executados após os ajustes: 193/193 testes aprovados; `ResourceMaintenanceIntegrationTest` 2/2 e `PublicApiWorkflowEndToEndTest` 1/1.
 - A cobertura passou os limites atuais. SonarCloud não foi executado porque as variáveis de configuração necessárias não estão presentes no ambiente local.
 - Não há interface visual para verificar responsividade; RF-13 permanece pendente.
-- Revisão humana da RTM não foi realizada e permanece pendente.
+- A RTM recebeu revisão humana aprovada por `@patrickassis7` em 2026-11-09.
