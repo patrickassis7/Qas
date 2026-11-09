@@ -55,4 +55,4 @@ O CSV precisa conter uma linha de usuário de teste no formato `email,password`.
 
 ## Resultado desta execução
 
-Pendente até a execução real do plano. Não inferir percentis, throughput ou aprovação por existir um arquivo JMX. A análise SonarCloud fica com o integrante responsável por essa integração.
+Execução real contra a aplicação pendente. O JMX 5.6.3 foi carregado e iniciado com um alvo não roteável apenas para validar sua estrutura; não foram medidos percentis nem throughput da aplicação. A tentativa de inicializar um ambiente isolado para a carga foi bloqueada pela revisão automática de comandos (`blocked by policy`), então nenhum container/app foi iniciado por essa tentativa. A análise SonarCloud fica com o integrante responsável por essa integração.
