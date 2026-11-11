@@ -1,28 +1,36 @@
 # PRD do produto
 
-## Personas
+## Fluxo de documentação
 
-As personas deste diretório representam os principais perfis de uso identificados para o aplicativo de estatísticas do Campeonato Brasileiro Série A. Elas são rascunhos iniciais, derivados do escopo informado, e não representam pesquisa com usuários.
+1. **Personas:** [Solicitante](personas/solicitante.md), [Responsável](personas/responsavel.md) e [Administrador](personas/administrador.md), derivadas do enunciado.
+2. **Requisitos e regras:** [requisitos-funcionais.md](requisitos-funcionais.md) reúne RFs, regras de negócio (RN) e requisitos não funcionais (RNF).
+3. **Rastreabilidade:** [RTM.md](../RTM.md) liga requisito, risco, teste e evidência.
+4. **Jornadas e arquitetura:** a construir (semana 35: C4, utility tree, riscos e ADRs), sem presumir regras além das do enunciado.
+5. **Implementação:** acompanha as semanas do cronograma do [README](../README.md).
 
-- [Administrador](personas/administrador.md): administra a aplicação e suas operações de dados.
-- [Torcedor](personas/torcedor.md): acompanha seu time, partidas e estatísticas.
-- [Investidor](personas/investidor.md): acompanha audiência por time e desempenho no campeonato.
+> Os artefatos antigos do domínio de futebol (Foot Fanatics) foram removidos deste repositório.
 
 ## Escopo conhecido
 
-- O aplicativo atende torcedores de times da Série A do Brasil.
-- O torcedor consulta confrontos, posição na competição, desempenho de jogadores e resultados recentes.
-- O investidor consulta acessos por time e desempenho dos times no campeonato.
-- O administrador tem responsabilidades administrativas e acesso relacionado ao banco de dados.
+- A aplicação deve organizar a alocação de salas, professores e materiais sem conflitos de horário.
+- A avaliação do projeto deve apresentar evidências objetivas de qualidade, segurança, rastreabilidade e desempenho.
+- Perfis definidos pelo enunciado do projeto: **Solicitante** (professor ou coordenador que consulta disponibilidade e cria, altera ou cancela reservas), **Responsável** (aprova solicitações especiais, valida a alocação de docentes e acompanha retiradas e devoluções) e **Administrador** (gerencia salas, professores, materiais, usuários, bloqueios e manutenção).
+- Regras críticas definidas: término posterior ao início; sem sobreposição de reservas do mesmo recurso (sala, material ou professor); uma única reserva aceita em solicitações simultâneas; recursos em manutenção não são reserváveis; somente responsáveis aprovam recursos restritos; reservas iniciadas não podem ser apagadas; toda mudança de estado gera auditoria.
+- Ciclo de vida da reserva: `SOLICITADA → APROVADA → EM_USO → CONCLUÍDA`, com estados alternativos rejeitada, cancelada e não compareceu.
+- Tecnologia definida pelo enunciado: Java 21 e Spring Boot 3.x.
+- Metas mensuráveis: 80% de cobertura de linhas, 70% de branches, 100% dos requisitos críticos na RTM e 0 bugs ou vulnerabilidades críticas.
+
+A lista completa de requisitos funcionais, a estratégia de qualidade e os entregáveis estão no [README da raiz](../README.md).
 
 ## Decisões pendentes
 
-- O que conta como “acesso por time”: visualizações, usuários únicos, sessões ou outra métrica; e quais filtros de período estarão disponíveis.
-- Como o “score do jogador” é calculado, qual a fonte dos dados e quando é atualizado.
-- Qual edição e temporada da Série A será coberta e como serão tratados dados históricos.
-- Quais ações e permissões compõem o acesso administrativo e o acesso ao banco de dados.
-- Se haverá login, favoritos, notificações ou personalização por time; esses itens não são requisitos confirmados neste rascunho.
+- Como detalhar as jornadas de frontend e de retaguarda a partir dos perfis acima, e validá-las explicitamente.
+- Quais recursos serão classificados como "restritos" (exigem aprovação do Responsável).
+- Granularidade e unidade de tempo das reservas (por exemplo, janelas mínimas e máximas).
+- Quais integrações externas ou notificações simuladas serão adotadas.
+- Quais limites de desempenho (tempo de resposta, vazão) serão metas do teste de carga com JMeter.
+- Quais políticas de segurança específicas (além de autorização por perfil e validação de entrada) serão aplicadas.
 
 ## Premissas de leitura
 
-Os perfis descrevem objetivos e necessidades, não especificações técnicas nem decisões finais de autorização. Informações demográficas, comportamentos observados e métricas quantitativas não foram presumidos. Os detalhes devem ser validados com usuários e responsáveis pelo produto antes de orientar implementação.
+O enunciado do projeto é a fonte de verdade para escopo, perfis, regras críticas e metas. Os requisitos, as regras e a RTM atuais foram derivados diretamente dele; riscos e testes da RTM são propostas da equipe, sujeitas a revisão. As jornadas e a arquitetura ainda serão construídas e validadas. Nenhum artefato do domínio de futebol deve ser usado como referência.

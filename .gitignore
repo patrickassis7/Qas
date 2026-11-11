@@ -11,6 +11,10 @@
 node_modules/
 node_modules
 
+# Java/Maven build output
+target/
+*.class
+
 # Build & Logs (AIOX)
 dist/
 build/
