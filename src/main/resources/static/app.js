@@ -409,13 +409,34 @@ function renderReservationTable(container, reservations, actions = true, adminVi
         cancel.addEventListener("click", () => cancelReservation(reservation.id)); actionCell.append(cancel);
       }
       if (adminView && ["SOLICITADA", "APROVADA", "EM_USO"].includes(reservation.status)) {
-        const operate = node("button", "small-button", "Acompanhar"); operate.type = "button";
-        operate.addEventListener("click", () => {
-          $("#approval-form").elements.reservationId.value = reservation.id;
-          const action = reservation.status === "SOLICITADA" ? "approve" : reservation.status === "APROVADA" ? "start" : "complete";
-          $("#approval-form").elements.action.value = action;
-          $("#approval-form").scrollIntoView({ behavior: "smooth", block: "center" });
-        }); actionCell.append(operate);
+const operate = node("button", "small-button", "Acompanhar");
+operate.type = "button";
+
+operate.addEventListener("click", () => {
+  const form = $("#approval-form");
+
+  form.elements.reservationId.value = reservation.id;
+
+  const action =
+    reservation.status === "SOLICITADA"
+      ? "approve"
+      : reservation.status === "APROVADA"
+        ? "start"
+        : "complete";
+
+  form.elements.action.value = action;
+
+  notify(
+    `Reserva selecionada para acompanhamento (${reservation.id.slice(0, 8)}...)`
+  );
+
+  form.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+});
+
+actionCell.append(operate);
       }
       cells.push(actionCell.childNodes.length ? actionCell : "—");
     }

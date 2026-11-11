@@ -163,7 +163,7 @@ A técnica é demonstrada em aula no Foot Fanatics e aplicada, na mesma semana, 
 
 ### Commits 01–03 — execução local, persistência e login
 
-Pré-requisitos: JDK 21, Docker e Docker Compose. O Maven global não é necessário, pois o projeto possui Maven Wrapper.
+Pré-requisitos: JDK 21 e acesso a um banco PostgreSQL. O Maven global não é necessário, pois o projeto possui Maven Wrapper.
 
 No Windows PowerShell:
 
@@ -216,7 +216,7 @@ Erros de autenticação e autorização usam `code`, `message`, `fieldErrors` e 
 
 ## Interface web (Commit 16 / RF-13)
 
-Com PostgreSQL em execução e a aplicação iniciada pelo comando PowerShell acima, abra **http://localhost:8080/**. A interface é servida pelo próprio Spring Boot, não requer Node.js, servidor separado ou bibliotecas JavaScript externas. Use as mesmas credenciais locais cadastradas na primeira inicialização do perfil `local`.
+Com o banco PostgreSQL configurado e a aplicação iniciada pelo comando PowerShell acima, abra **http://localhost:8080/**. A interface é servida pelo próprio Spring Boot, não requer Node.js, servidor separado ou bibliotecas JavaScript externas. Use as mesmas credenciais locais cadastradas na primeira inicialização do perfil `local`.
 
 A tela inicial oferece consulta de recursos, verificação de disponibilidade por período, criação e acompanhamento das reservas. Administradores também podem cadastrar, atualizar e desativar recursos; administradores e responsáveis podem enviar ações de aprovação e operação para reservas permitidas pelo backend. O token fica somente no `sessionStorage` da aba e é removido ao sair ou quando a API retorna 401.
 
