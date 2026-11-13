@@ -1,0 +1,34 @@
+language: pt-BR
+
+reviews:
+  profile: chill
+  auto_review:
+    enabled: false
+    base_branches:
+      - main
+  merge_risk_instructions: >
+    Mudanças em autenticação/autorização, migrations, isolamento PostgreSQL,
+    concorrência de reservas e workflows/secrets são de alto risco. Alterações
+    exclusivamente documentais são de baixo risco quando preservam evidências
+    históricas e não afirmam validações que não foram executadas.
+  path_instructions:
+    - path: "src/main/java/**"
+      instructions: |
+        Revise autorização nos limites da API, validação de entrada, transações,
+        tratamento seguro de erros e exposição de dados sensíveis. Preserve a
+        arquitetura modular existente e não sugira rotas ou permissões sem
+        suporte nos requisitos.
+    - path: "src/test/java/**"
+      instructions: |
+        Não enfraqueça testes nem cobertura. Testes de integração usam apenas
+        PostgreSQL local por TEST_DB_* em loopback, com schema isolado por
+        classe; nunca use SUPABASE_DB_URL como datasource da suíte.
+    - path: ".github/workflows/**"
+      instructions: |
+        Preserve permissões mínimas e isolamento de secrets por job. O probe
+        Supabase deve permanecer manual, read-only e sem imprimir credenciais.
+    - path: "docs/**"
+      instructions: |
+        Escreva em português brasileiro. Diferencie resultado executado de
+        resultado reportado ou pendente, referencie evidências verificáveis e
+        preserve métricas e fatos históricos.
