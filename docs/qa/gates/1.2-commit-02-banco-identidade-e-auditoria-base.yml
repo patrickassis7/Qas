@@ -1,0 +1,25 @@
+schema: 1
+story: '1.2'
+story_title: 'Commit 02 - Banco, identidade e auditoria base'
+gate: PASS
+status_reason: 'A suíte completa passou com PostgreSQL 16.15 isolado: 220 testes, 0 falhas, 0 erros e 0 skips; JaCoCo passou. Migration, serviço de auditoria, restrições de dados e seeds foram inspecionados e os critérios desta story estão cobertos.'
+reviewer: 'Quinn (Test Architect)'
+reviewed_revision: 'commit:cc11ccf'
+updated: '2026-11-13T19:24:54Z'
+top_issues: []
+waiver: { active: false }
+evidence:
+  tests_reviewed: 220
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+  checks:
+    clean_verify: 'PASS — 220 testes, 0 falhas, 0 erros, 0 skips'
+    postgres: 'PostgreSQL 16.15 isolado em loopback; 6 migrations validadas/aplicadas nos schemas de teste'
+    jacoco: 'PASS — 93.64% linhas (1074/1147), 78.57% branches (220/280)'
+    identity_audit: 'Testes de integração aprovados para FK, unicidade, eventos humanos/sistema e rejeição de chaves sensíveis'
+    seed_isolation: 'Testes local/test aprovados'
+  review_limits:
+    - 'A execução fresca usou OpenJDK 25.0.5 com compilação Maven --release 21; esta execução não foi feita em runtime Java 21.'
+    - 'CodeRabbit não executado conforme política; nenhum código foi enviado a serviço externo.'

@@ -1,0 +1,25 @@
+schema: 1
+story: '1.3'
+story_title: 'Commit 03 - Autenticação e autorização (RF-01)'
+gate: PASS
+status_reason: 'A suíte completa passou com PostgreSQL 16.15 isolado: 220 testes, 0 falhas, 0 erros e 0 skips; JaCoCo passou. Os testes atuais cobrem configuração segura do JWT, autenticação/autorização e regressão, sem achados bloqueantes nos critérios da story.'
+reviewer: 'Quinn (Test Architect)'
+reviewed_revision: 'commit:cc11ccf'
+updated: '2026-11-13T19:24:54Z'
+top_issues: []
+waiver: { active: false }
+evidence:
+  tests_reviewed: 220
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+  checks:
+    clean_verify: 'PASS — 220 testes, 0 falhas, 0 erros, 0 skips'
+    postgres: 'PostgreSQL 16.15 isolado em loopback; migrations e testes de integração executados'
+    jacoco: 'PASS — 93.64% linhas (1074/1147), 78.57% branches (220/280)'
+    jwt: 'Teste de configuração 6/6; integração de autenticação 23/23; segredo vem do ambiente do processo'
+    security_review: 'BCrypt, JWT HS256/validação temporal, rotas protegidas e respostas de erro revisados'
+  review_limits:
+    - 'A execução fresca usou OpenJDK 25.0.5 com compilação Maven --release 21; esta execução não foi feita em runtime Java 21.'
+    - 'CodeRabbit não executado conforme política; nenhum código foi enviado a serviço externo.'

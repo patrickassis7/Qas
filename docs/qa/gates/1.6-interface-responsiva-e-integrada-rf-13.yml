@@ -1,0 +1,26 @@
+schema: 1
+story: '1.6'
+story_title: 'Interface responsiva e integrada (RF-13)'
+gate: PASS
+status_reason: 'A suíte completa passou com PostgreSQL 16.15 isolado: 220 testes, 0 falhas, 0 erros e 0 skips; JaCoCo passou. A revalidação Playwright/Chromium registrada e as 42 capturas verificadas apoiam os critérios de RF-13, sem achados bloqueantes.'
+reviewer: 'Quinn (Test Architect)'
+reviewed_revision: 'commit:cc11ccf'
+updated: '2026-11-13T19:24:54Z'
+top_issues: []
+waiver: { active: false }
+evidence:
+  tests_reviewed: 220
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    ac_gaps: []
+  checks:
+    clean_verify: 'PASS — 220 testes, 0 falhas, 0 erros, 0 skips'
+    postgres: 'PostgreSQL 16.15 isolado em loopback; aplicação real e dados sintéticos'
+    jacoco: 'PASS — 93.64% linhas (1074/1147), 78.57% branches (220/280)'
+    browser: 'Playwright/Chromium reportado: login e views em 320/375/390/768/1024/1440; 36/36 medições sem overflow e sem exceções JavaScript'
+    screenshots: '42 arquivos PNG conferidos; 7 views x 6 larguras, nomes e dimensões coerentes'
+    frontend_security: 'DOM com textContent/nós; sem innerHTML, outerHTML, document.write ou eval; token em sessionStorage'
+  review_limits:
+    - 'Os resultados de Playwright/overflow são evidência registrada pelo executor e apoiada pelas capturas; a automação não foi reexecutada nesta revisão.'
+    - 'CodeRabbit não executado conforme política; nenhum código foi enviado a serviço externo.'

@@ -10,11 +10,10 @@
  * @story 2.10 - Quality Gate Manager
  */
 
-const childProcess = require('child_process');
 const fs = require('fs').promises;
-const os = require('os');
 const path = require('path');
 const { BaseLayer } = require('./base-layer');
+const { CodeRabbitCliAdapter } = require('./coderabbit-cli-adapter');
 
 /**
  * Layer 2: PR Automation checks
@@ -90,161 +89,60 @@ class Layer2PRAutomation extends BaseLayer {
    */
   async runCodeRabbit(context = {}) {
     const { verbose = false } = context;
-    const timeout = this.coderabbit.timeout || 900000; // 15 minutes default
 
     if (verbose) {
       console.log('  🐰 Running CodeRabbit review...');
     }
 
-    try {
-      // Build command for current platform when no explicit override is present.
-      // - this.coderabbit.command: explicit string wins (backward compat with old configs).
-      // - this.coderabbit.installation_mode: 'wsl' | 'native' lets ops override platform detection.
-      // - Default: Windows hosts wrap via WSL, macOS/Linux run the binary directly.
-      // - ${PROJECT_ROOT} is resolved programmatically — `child_process.spawn` with
-      //   `shell: true` does shell expansion, but we cannot rely on PROJECT_ROOT
-      //   being set in the env at call sites, so substitute it here.
-      // - Tilde handling differs per mode: native expands via os.homedir() so the
-      //   resolved absolute path is shell-agnostic; WSL mode keeps the literal `~`
-      //   so the WSL distribution's own bash expands it (the host's HOME would point
-      //   at a Windows path that WSL cannot resolve).
-      let command;
-      if (this.coderabbit.command) {
-        command = this.coderabbit.command;
-      } else {
-        const rawCliPath = this.coderabbit.cli_path || '~/.local/bin/coderabbit';
-        const mode =
-          this.coderabbit.installation_mode ||
-          (process.platform === 'win32' ? 'wsl' : 'native');
-        if (mode === 'wsl') {
-          // Probe WSL availability before building the command. Gives a clearer
-          // diagnostic than cmd.exe's generic "'wsl' is not recognized" when
-          // WSL is not installed. ENOENT (binary missing) and non-zero exit
-          // (WSL feature present but no distribution installed) both fail this
-          // check.
-          const wslProbe = childProcess.spawnSync('wsl', ['-l'], { encoding: 'utf8' });
-          if (wslProbe.error || wslProbe.status !== 0) {
-            throw new Error(
-              'CodeRabbit CLI requires WSL on Windows hosts. Install WSL via ' +
-                '`wsl --install` (https://learn.microsoft.com/windows/wsl/install), ' +
-                'then install the CodeRabbit CLI inside the WSL distribution. ' +
-                'See docs/guides/installation-troubleshooting.md Issue 10. ' +
-                'To bypass this check, set coderabbit.installation_mode=\'native\' in your config.',
-            );
-          }
-          const projectRoot = this.coderabbit.projectRoot || process.cwd();
-          const wslProjectPath = projectRoot
-            .replace(/\\/g, '/')
-            .replace(/^([A-Za-z]):/, (_, drive) => `/mnt/${drive.toLowerCase()}`);
-          // Keep literal `~` — WSL bash expands it to the WSL user's HOME.
-          command = `wsl bash -c 'cd "${wslProjectPath}" && ${rawCliPath} --prompt-only -t uncommitted'`;
-        } else {
-          const cliPath = rawCliPath.startsWith('~')
-            ? path.join(os.homedir(), rawCliPath.slice(1))
-            : rawCliPath;
-          command = `${cliPath} --prompt-only -t uncommitted`;
-        }
-      }
+    const adapter = new CodeRabbitCliAdapter(this.coderabbit, {
+      projectRoot: this.coderabbit.projectRoot || process.cwd(),
+    });
+    const result = await adapter.run({ scope: 'uncommitted' });
 
-      const result = await this.runCommand(command, timeout);
-      if (result.exitCode !== undefined && result.exitCode !== 0) {
-        throw new Error(
-          `CodeRabbit CLI exited with code ${result.exitCode}. ` +
-            `stdout: ${(result.stdout || '').slice(0, 200)}, ` +
-            `stderr: ${(result.stderr || '').slice(0, 200)}`,
-        );
-      }
-
-      // Parse CodeRabbit output for issues
-      const issues = this.parseCodeRabbitOutput(result.stdout + result.stderr);
-
-      const criticalCount = issues.filter((i) => i.severity === 'CRITICAL').length;
-      const highCount = issues.filter((i) => i.severity === 'HIGH').length;
-      const mediumCount = issues.filter((i) => i.severity === 'MEDIUM').length;
-      const lowCount = issues.filter((i) => i.severity === 'LOW').length;
-
-      // Block on CRITICAL issues
-      const blockOn = this.coderabbit.blockOn || ['CRITICAL'];
-      const hasBlockingIssues = issues.some((i) => blockOn.includes(i.severity));
-
-      const pass = !hasBlockingIssues;
-
-      const coderabbitResult = {
-        check: 'coderabbit',
-        pass,
-        issues: {
-          critical: criticalCount,
-          high: highCount,
-          medium: mediumCount,
-          low: lowCount,
-          total: issues.length,
-        },
-        details: issues,
-        duration: result.duration,
-        message: pass
-          ? `CodeRabbit passed (${criticalCount} CRITICAL, ${highCount} HIGH)`
-          : `CodeRabbit found blocking issues (${criticalCount} CRITICAL)`,
-      };
-
-      if (verbose) {
-        const icon = pass ? '✓' : '⚠️';
-        console.log(
-          `  ${icon} CodeRabbit: ${criticalCount} CRITICAL, ${highCount} HIGH, ${mediumCount} MEDIUM`,
-        );
-      }
-
-      return coderabbitResult;
-    } catch (error) {
-      // CodeRabbit not installed or not accessible - graceful degradation
-      if (error.message.includes('not found') || error.message.includes('command not found')) {
-        if (verbose) {
-          console.log('  ⏭️ CodeRabbit: Skipped (not installed)');
-        }
-        return {
-          check: 'coderabbit',
-          pass: true,
-          skipped: true,
-          message: 'CodeRabbit not installed - skipping (graceful degradation)',
-        };
-      }
-
+    if (!result.success) {
       return {
         check: 'coderabbit',
         pass: false,
-        error: error.message,
-        message: `CodeRabbit error: ${error.message}`,
+        blocked: true,
+        error: result.error,
+        message: `CodeRabbit blocked: ${result.error}`,
       };
     }
-  }
 
-  /**
-   * Parse CodeRabbit output for issues
-   * @param {string} output - Command output
-   * @returns {Array<Object>} Parsed issues
-   */
-  parseCodeRabbitOutput(output) {
-    const issues = [];
+    const issues = result.issues;
+    const counts = {
+      CRITICAL: issues.filter((issue) => issue.severity === 'CRITICAL').length,
+      HIGH: issues.filter((issue) => issue.severity === 'HIGH').length,
+      MEDIUM: issues.filter((issue) => issue.severity === 'MEDIUM').length,
+      LOW: issues.filter((issue) => issue.severity === 'LOW').length,
+    };
+    const blockOn = this.coderabbit.blockOn || ['CRITICAL'];
+    const pass = !issues.some((issue) => blockOn.includes(issue.severity));
+    const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
 
-    // Match patterns like "CRITICAL:", "HIGH:", etc.
-    const patterns = [
-      { regex: /\bCRITICAL\b[:\s]+([^\n]+)/gi, severity: 'CRITICAL' },
-      { regex: /\bHIGH\b[:\s]+([^\n]+)/gi, severity: 'HIGH' },
-      { regex: /\bMEDIUM\b[:\s]+([^\n]+)/gi, severity: 'MEDIUM' },
-      { regex: /\bLOW\b[:\s]+([^\n]+)/gi, severity: 'LOW' },
-    ];
+    if (verbose) {
+      const icon = pass ? '✓' : '⚠️';
+      console.log(
+        `  ${icon} CodeRabbit: ${counts.CRITICAL} CRITICAL, ${counts.HIGH} HIGH, ${counts.MEDIUM} MEDIUM`,
+      );
+    }
 
-    patterns.forEach(({ regex, severity }) => {
-      let match;
-      while ((match = regex.exec(output)) !== null) {
-        issues.push({
-          severity,
-          message: match[1].trim(),
-          raw: match[0],
-        });
-      }
-    });
-
-    return issues;
+    return {
+      check: 'coderabbit',
+      pass,
+      issues: {
+        critical: counts.CRITICAL,
+        high: counts.HIGH,
+        medium: counts.MEDIUM,
+        low: counts.LOW,
+        total,
+      },
+      details: issues,
+      duration: result.duration,
+      message: pass
+        ? `CodeRabbit passed (${counts.CRITICAL} CRITICAL, ${counts.HIGH} HIGH)`
+        : `CodeRabbit found blocking issues (${counts.CRITICAL} CRITICAL)`,
+    };
   }
 
   /**
@@ -328,56 +226,6 @@ class Layer2PRAutomation extends BaseLayer {
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
   }
 
-  /**
-   * Run a command and capture output
-   * @param {string} command - Command to run
-   * @param {number} timeout - Timeout in milliseconds
-   * @returns {Promise<Object>} Command result
-   */
-  runCommand(command, timeout = 60000) {
-    return new Promise((resolve, reject) => {
-      const startTime = Date.now();
-
-      const options = {
-        shell: true,
-        cwd: process.cwd(),
-        env: { ...process.env },
-      };
-
-      const child = childProcess.spawn(command, [], options);
-
-      let stdout = '';
-      let stderr = '';
-
-      child.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      child.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      const timer = setTimeout(() => {
-        child.kill();
-        reject(new Error(`Command timed out after ${timeout}ms`));
-      }, timeout);
-
-      child.on('close', (exitCode) => {
-        clearTimeout(timer);
-        resolve({
-          exitCode,
-          stdout,
-          stderr,
-          duration: Date.now() - startTime,
-        });
-      });
-
-      child.on('error', (error) => {
-        clearTimeout(timer);
-        reject(error);
-      });
-    });
-  }
 }
 
 module.exports = { Layer2PRAutomation };
