@@ -1,6 +1,6 @@
 # Matriz de Rastreabilidade
 
-Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09, `./mvnw.cmd --batch-mode --no-transfer-progress clean verify` passou com 202 testes, zero falhas/erros/ignorados. JaCoCo mediu 93,64% de linhas (1074/1147) e 78,57% de branches (220/280). Isso comprova o gate de cobertura, mas não declara cobertura funcional de 100%. A evidência visual manual reportada para RF-13 está descrita na story 1.6; SonarCloud segue pendente. A carga JMeter real está registrada em `docs/quality/plano-de-carga.md`. A revisão humana da RTM foi aprovada por `@patrickassis7` em 2026-11-09.
+Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09, `./mvnw.cmd --batch-mode --no-transfer-progress clean verify` passou com 202 testes, zero falhas/erros/ignorados. JaCoCo mediu 93,64% de linhas (1074/1147) e 78,57% de branches (220/280). Isso comprova o gate de cobertura, mas não declara cobertura funcional de 100%. Em 2026-11-13, o [workflow_dispatch](https://github.com/patrickassis7/Qas/actions/runs/43480494339) passou nos jobs `verify` (220 testes, sem falhas/erros/ignorados e gate JaCoCo aprovado) e `supabase-connection` (consulta read-only `SELECT 1` aprovada). A análise SonarCloud da [PR #7](https://sonarcloud.io/dashboard?id=patrickassis7_Qas&pullRequest=7) também concluiu com check `SonarCloud Code Analysis` aprovado; o passo Sonar foi pulado no workflow_dispatch por estar condicionado a pull requests. A evidência visual manual reportada para RF-13 está descrita na story 1.6; não há capturas preservadas. A carga JMeter real está registrada em `docs/quality/plano-de-carga.md`. A revisão humana da RTM foi aprovada por `@patrickassis7` em 2026-11-09.
 
 | Requisito | Risco | Teste e evidência localizável | Status nesta revisão |
 |---|---|---|---|
@@ -32,10 +32,11 @@ Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09
 | RN-07 | RF-04: reserva iniciada não é excluída | `ReservationIntegrationTest` | Suíte aprovada em clean verify |
 | RN-08 | RF-10: mudanças de estado geram auditoria | `IdentityAuditIntegrationTest`, `ApprovalIntegrationTest` | Suíte aprovada em clean verify |
 | RNF-01 | Cobertura mínima JaCoCo | `pom.xml`, `.github/workflows/ci.yml`, `target/site/jacoco/jacoco.csv` | 93,64% linhas e 78,57% branches; gate 80%/70% aprovado; falhas isoladas comprovadas |
+| RNF-02 | Análise estática SonarCloud | `.github/workflows/ci.yml` | [Quality Gate da PR #7](https://sonarcloud.io/dashboard?id=patrickassis7_Qas&pullRequest=7) aprovado; check registra 0 novos issues e 0 security hotspots |
 | RNF-05 | Segurança e tratamento seguro de erros | `AuthIntegrationTest`, `IdentityAuditIntegrationTest`, `ReservationIntegrationTest`, `ResourceMaintenanceIntegrationTest`, `GlobalExceptionHandler` | Autorização por perfil preservada e ampliada nos endpoints reais de recursos; erros de paginação inválida são 400 uniformes sem stack trace; headers `nosniff`/`DENY` verificados; suíte completa 202/202 |
-| RNF-06 | Testes com PostgreSQL/WireMock | `PostgresIntegrationTestSupport`, `ApprovalIntegrationTest`; schema exclusivo por classe e rejeição de datasource remoto | Migração para PostgreSQL 16 nativo implementada e validada localmente (220/220 testes); execução do workflow GitHub e probe Supabase manual ainda pendentes |
+| RNF-06 | Testes com PostgreSQL/WireMock | `PostgresIntegrationTestSupport`, `ApprovalIntegrationTest`; schema exclusivo por classe e rejeição de datasource remoto | PostgreSQL 16 nativo, isolamento e suíte (220/220) aprovados no [workflow GitHub](https://github.com/patrickassis7/Qas/actions/runs/43480494339); probe Supabase read-only também aprovado no mesmo dispatch |
 | RNF-07 | Evidência de TDD/BDD | Histórico de desenvolvimento | Pendente de evidência revisável |
-| RNF-08 | Rastreabilidade | Esta matriz | Revisão humana aprovada por `@patrickassis7` em 2026-11-09; rastreabilidade funcional parcial conforme evidências por RF |
+| RNF-08 | Rastreabilidade | Esta matriz e [RTM raiz](../RTM.md) | Todos os 9 requisitos críticos da RTM raiz agora têm risco, teste e evidência vinculados; a rastreabilidade funcional dos demais requisitos permanece conforme evidências individuais acima |
 
 ## Gate e revisão
 
@@ -44,6 +45,6 @@ Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09
 - Bloqueio de branches demonstrado com mínimo 78% (77,27% observado): `jacoco:check@check-coverage -Djacoco.minimum.lines=0.80 -Djacoco.minimum.branches=0.78` falhou.
 - Clean verify em 2026-11-09 executou 202 testes: 202 passaram, 0 falhas, 0 erros, 0 ignorados.
 - JMeter 5.6.3: carga local real concluída; 55.792 pesquisas HTTP 200, p50 4 ms, p95 7 ms, p99 9 ms e throughput 933,99 req/s. Colisão resultou em um 201, sete 409 esperados, zero 500 e nenhuma reserva órfã. Evidência agregada em `docs/quality/plano-de-carga.md`; resultados brutos permanecem fora do Git.
-- SonarCloud depende de configuração externa e não foi executado nesta revisão.
+- SonarCloud: Quality Gate da PR #7 aprovado (0 novos issues e 0 security hotspots); no run 43480494339 o passo foi pulado porque `workflow_dispatch` não satisfaz a condição `github.event.pull_request`.
 - RF-13 tem validação visual manual reportada nesta revisão; a evidência e sua limitação (sem capturas preservadas) estão na story 1.6.
 - Revisão humana da RTM: aprovada por `@patrickassis7` em 2026-11-09, confirmação explícita registrada nesta sessão.
