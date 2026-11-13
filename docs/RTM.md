@@ -33,7 +33,7 @@ Esta matriz complementa o arquivo raiz `RTM.md`; não o substitui. Em 2026-11-09
 | RN-08 | RF-10: mudanças de estado geram auditoria | `IdentityAuditIntegrationTest`, `ApprovalIntegrationTest` | Suíte aprovada em clean verify |
 | RNF-01 | Cobertura mínima JaCoCo | `pom.xml`, `.github/workflows/ci.yml`, `target/site/jacoco/jacoco.csv` | 93,64% linhas e 78,57% branches; gate 80%/70% aprovado; falhas isoladas comprovadas |
 | RNF-05 | Segurança e tratamento seguro de erros | `AuthIntegrationTest`, `IdentityAuditIntegrationTest`, `ReservationIntegrationTest`, `ResourceMaintenanceIntegrationTest`, `GlobalExceptionHandler` | Autorização por perfil preservada e ampliada nos endpoints reais de recursos; erros de paginação inválida são 400 uniformes sem stack trace; headers `nosniff`/`DENY` verificados; suíte completa 202/202 |
-| RNF-06 | Testes com PostgreSQL/WireMock | `PostgresIntegrationTestSupport`, `ApprovalIntegrationTest` | Suíte aprovada com Testcontainers/WireMock |
+| RNF-06 | Testes com PostgreSQL/WireMock | `PostgresIntegrationTestSupport`, `ApprovalIntegrationTest`; schema exclusivo por classe e rejeição de datasource remoto | Migração para PostgreSQL 16 nativo implementada e validada localmente (220/220 testes); execução do workflow GitHub e probe Supabase manual ainda pendentes |
 | RNF-07 | Evidência de TDD/BDD | Histórico de desenvolvimento | Pendente de evidência revisável |
 | RNF-08 | Rastreabilidade | Esta matriz | Revisão humana aprovada por `@patrickassis7` em 2026-11-09; rastreabilidade funcional parcial conforme evidências por RF |
 

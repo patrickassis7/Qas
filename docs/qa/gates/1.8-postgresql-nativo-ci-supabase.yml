@@ -1,0 +1,76 @@
+schema: 1
+story: '1.8'
+story_title: 'PostgreSQL nativo no CI e verificação segura do Supabase'
+gate: CONCERNS
+status_reason: 'A validação local reportada e a inspeção do isolamento/configuração são favoráveis, mas a execução GitHub e o probe Supabase permanecem pendentes. A prova de isolamento por sentinela é parcial e docs/RTM.md ainda descreve a migração como pendente.'
+reviewer: 'Quinn (Test Architect)'
+reviewed_revision: 'worktree-sha256:12ae7ef91bfcaa7f2d875414dea0d913c7b338b809e14ec6a314b23b234a54e3'
+updated: '2026-11-13T17:26:17Z'
+expires: '2026-11-27T17:26:17Z'
+top_issues:
+  - id: REL-001
+    severity: medium
+    finding: 'O workflow GitHub e o job/probe Supabase não foram executados; os resultados locais e a inspeção estática não demonstram o comportamento do runner remoto ou da conexão.'
+    suggested_action: 'Após publicar e disparar o workflow, registrar o resultado de verify e, separadamente, do job manual Supabase sem expor o secret.'
+    suggested_owner: dev
+  - id: TEST-001
+    severity: medium
+    finding: 'Os testes de isolamento verificam schema atual e marcador próprio em cada classe, mas não contêm uma asserção direta de que o sentinela de uma classe não é visível na outra.'
+    suggested_action: 'Adicionar uma verificação cruzada explícita entre schemas/classes ou alinhar a evidência da story ao que os testes demonstram.'
+    suggested_owner: dev
+  - id: DOC-001
+    severity: low
+    finding: 'docs/RTM.md ainda declara pendente a migração para PostgreSQL nativo, embora a implementação e a validação local já estejam registradas; apenas a execução remota está pendente.'
+    suggested_action: 'Atualizar o estado para separar migração implementada de validação remota pendente.'
+    suggested_owner: dev
+  - id: DOC-002
+    severity: low
+    finding: 'Além das instruções operacionais, uma frase do bloco de resultado histórico em docs/quality/plano-de-carga.md foi alterada; os números e referências de evidência não mudaram.'
+    suggested_action: 'Confirmar autorização para a contextualização histórica; caso contrário, restaurar a frase anterior sem alterar as instruções operacionais.'
+    suggested_owner: dev
+waiver:
+  active: false
+quality_score: 80
+evidence:
+  tests_reviewed: 220
+  risks_identified: 4
+  execution_reported_by_executor:
+    clean_verify: 'Duas execuções reportadas; cada uma com 220 testes, 0 failures, 0 errors e 0 skips.'
+    jacoco: 'Gate reportado como aprovado nas duas execuções.'
+    focused_isolation: 'Testes focados de configuração/isolamento reportados como aprovados; schemas limpos.'
+    static_validation: 'Validação YAML/Node e git diff --check reportados como aprovados; git diff --check também verificado nesta revisão.'
+    remote_validation: 'GitHub Actions e probe Supabase não executados; dependem de publicação/disparo remoto.'
+  trace:
+    ac_covered: [1, 3, 8]
+    ac_gaps: [1, 2, 4, 5, 6, 7]
+  nfr_validation:
+    security:
+      status: PASS
+      notes: 'Revisão estática favorável; nenhum segredo consultado. A conexão Supabase não foi executada.'
+    performance:
+      status: PASS
+      notes: 'Nenhum risco de performance identificado por inspeção; resultados históricos de carga preservados.'
+    reliability:
+      status: CONCERNS
+      notes: 'Duas execuções locais passaram conforme evidência fornecida, mas ainda falta execução do workflow GitHub e do probe remoto.'
+    maintainability:
+      status: CONCERNS
+      notes: 'A prova cruzada do sentinela é incompleta e docs/RTM.md conserva redação de estado desatualizada.'
+  review_limits:
+    - 'Revisão independente e estática; QA não reexecutou Maven, testes focados ou validação YAML/Node.'
+    - 'Resultados de execução foram fornecidos pelo solicitante e conferidos nos registros da story.'
+    - 'GitHub Actions e conexão Supabase não executados; nenhum segredo foi lido.'
+    - 'CodeRabbit não executado para evitar transmissão do código a serviço externo.'
+recommendations:
+  immediate:
+    - action: 'Executar e registrar verify no GitHub e o job Supabase manual quando o workflow estiver publicado e o disparo for autorizado.'
+      refs: ['.github/workflows/ci.yml']
+    - action: 'Fortalecer a evidência do isolamento com asserção cruzada entre classes.'
+      refs:
+        - 'src/test/java/br/com/organizacaorecursos/integration/SchemaIsolationReaderIntegrationTest.java'
+        - 'src/test/java/br/com/organizacaorecursos/integration/SchemaIsolationWriterIntegrationTest.java'
+  future:
+    - action: 'Alinhar o estado de migração descrito na RTM complementar com a implementação atual e a pendência remota.'
+      refs: ['docs/RTM.md']
+    - action: 'Confirmar o escopo da frase alterada no bloco histórico do plano de carga.'
+      refs: ['docs/quality/plano-de-carga.md']

@@ -26,6 +26,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +49,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @Import(AuthIntegrationTest.TestRoutes.class)
 class AuthIntegrationTest extends PostgresIntegrationTestSupport {
+
+    @DynamicPropertySource
+    static void postgresProperties(DynamicPropertyRegistry registry) {
+        registerPostgresProperties(registry, AuthIntegrationTest.class);
+    }
 
     private static final String PASSWORD = "synthetic-password-only-for-tests";
     private static final String ISSUER = "organizacao-recursos";

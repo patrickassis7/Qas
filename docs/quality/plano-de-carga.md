@@ -47,65 +47,38 @@ O CSV precisa conter uma linha de usuário de teste no formato `email,password`.
 
 ### Execução manual isolada no Windows/PowerShell
 
-A execução automatizada local foi bloqueada pela revisão do ambiente. Para fazê-la manualmente, use dois terminais PowerShell na raiz do repositório. O primeiro cria nomes aleatórios para o projeto Compose e para o dataset, gera segredos criptográficos sem imprimi-los, inicia o PostgreSQL sob um projeto/volume exclusivo e com a porta publicada somente em `127.0.0.1`, e mantém o Spring Boot em primeiro plano. O segundo cria um recurso sintético, executa o JMeter e confere os resultados. Não reutilize o nome de um projeto Compose existente.
+Use PostgreSQL 16 instalado e iniciado como serviço local. Crie previamente, por uma ferramenta administrativa local (por exemplo, pgAdmin), um banco descartável `or_commit15_load` e um usuário `or_load` com permissões para as migrations. Restrinja conexões a loopback e nunca use banco de produção, dados de terceiros ou o Supabase. O procedimento abaixo não inicia, encerra ou remove o serviço PostgreSQL.
 
-**Terminal 1 — criar o ambiente e iniciar o backend:**
+**Terminal 1 — configurar o banco local e iniciar o backend:**
 
 ```powershell
 $runId = [guid]::NewGuid().ToString('N')
-$env:COMPOSE_PROJECT_NAME = "or-c15-$runId"
 $env:DB_NAME = 'or_commit15_load'
 $env:DB_USERNAME = 'or_load'
+$env:DB_PORT = '5432'
 $env:SPRING_PROFILES_ACTIVE = 'local'
+$dbPasswordSecure = Read-Host "Senha do usuário local or_load" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $dbPasswordSecure).Password
+$env:DB_URL = "jdbc:postgresql://127.0.0.1:$env:DB_PORT/$env:DB_NAME"
 $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
-$dbBytes = New-Object byte[] 32
 $seedBytes = New-Object byte[] 32
 $jwtBytes = New-Object byte[] 48
-$rng.GetBytes($dbBytes)
 $rng.GetBytes($seedBytes)
 $rng.GetBytes($jwtBytes)
 $rng.Dispose()
-$env:DB_PASSWORD = [Convert]::ToBase64String($dbBytes)
 $env:LOCAL_SEED_PASSWORD = [Convert]::ToBase64String($seedBytes)
 $env:JWT_SECRET = [Convert]::ToBase64String($jwtBytes)
-$composeOverride = Join-Path $env:TEMP "or-c15-$runId-compose.yml"
-$composeContent = @'
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: ${DB_NAME:?DB_NAME must be set}
-      POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME must be set}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
-    ports:
-      - "127.0.0.1::5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-volumes:
-  postgres_data:
-'@
-[System.IO.File]::WriteAllText($composeOverride, $composeContent, [System.Text.UTF8Encoding]::new($false))
 $loadCsv = Join-Path $env:TEMP "or-c15-$runId-users.csv"
 $csvLine = '"professor.local@organizacao-recursos.local","' + $env:LOCAL_SEED_PASSWORD + '"'
 [System.IO.File]::WriteAllText($loadCsv, $csvLine, [System.Text.UTF8Encoding]::new($false))
 Write-Output "Dataset sintético: $loadCsv"
-Write-Output "Projeto Compose isolado: $env:COMPOSE_PROJECT_NAME"
-docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME up -d --wait postgres
-if ($LASTEXITCODE -ne 0) { throw 'PostgreSQL não ficou saudável.' }
-$publishedPort = docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME port postgres 5432
-if ($LASTEXITCODE -ne 0 -or -not $publishedPort) { throw 'Não foi possível consultar a porta publicada.' }
-$env:DB_PORT = [string]($publishedPort -split ':')[-1]
-$env:DB_URL = "jdbc:postgresql://127.0.0.1:$env:DB_PORT/$env:DB_NAME"
-docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME ps
+Write-Output "Banco local descartável: $env:DB_NAME em 127.0.0.1:$env:DB_PORT"
+pg_isready --host=127.0.0.1 --port=$env:DB_PORT
+if ($LASTEXITCODE -ne 0) { throw 'O serviço PostgreSQL local não está disponível.' }
 .\mvnw.cmd --batch-mode --no-transfer-progress spring-boot:run
 ```
 
-O último comando mantém a aplicação em execução. Os segredos ficam apenas nas variáveis do processo e no CSV sintético em `%TEMP%`; não copie os valores para argumentos, arquivos do repositório ou logs.
+O último comando mantém a aplicação em execução. As senhas ficam apenas nas variáveis do processo e no CSV sintético em `%TEMP%`; não copie os valores para argumentos, arquivos do repositório ou logs.
 
 **Terminal 2 — criar um recurso sintético e executar JMeter 5.6.3:**
 
@@ -154,19 +127,18 @@ if ($collisions.Count -ne 8 -or @($collisions | Where-Object responseCode -eq '2
 }
 ```
 
-Depois, verifique no banco isolado a reserva e a ausência de reservas sem recurso. Execute no Terminal 2, informando o nome não secreto do projeto Compose impresso pelo Terminal 1:
+Depois, verifique no banco isolado a reserva e a ausência de reservas sem recurso. Execute no Terminal 2; o `psql` solicitará a senha do usuário local:
 
 ```powershell
-$composeProject = Read-Host 'Informe o projeto Compose isolado impresso pelo Terminal 1'
 $dbUsername = 'or_load'
 $dbName = 'or_commit15_load'
+$dbPort = 5432
 $sql = "SELECT COUNT(DISTINCT r.id) AS reservas_na_janela FROM reservations r JOIN reservation_resources rr ON rr.reservation_id = r.id WHERE rr.resource_id = '$resourceId'::uuid AND r.start_at = '$loadStart'::timestamptz AND r.end_at = '$loadEnd'::timestamptz; SELECT COUNT(*) AS reservas_orfas FROM reservations r WHERE NOT EXISTS (SELECT 1 FROM reservation_resources rr WHERE rr.reservation_id = r.id);"
-$dbContainer = docker ps -q --filter "label=com.docker.compose.project=$composeProject" --filter 'label=com.docker.compose.service=postgres'
-if (-not $dbContainer) { throw 'Container PostgreSQL do projeto isolado não foi encontrado.' }
-docker exec $dbContainer psql -U $dbUsername -d $dbName -c $sql
+psql --host=127.0.0.1 --port=$dbPort --username=$dbUsername --dbname=$dbName --no-psqlrc --set=ON_ERROR_STOP=1 --command=$sql
+if ($LASTEXITCODE -ne 0) { throw 'Não foi possível conferir o banco local de carga.' }
 ```
 
-Ao terminar, pare o Spring Boot com `Ctrl+C` no Terminal 1 e execute `docker compose -f $composeOverride --project-name $env:COMPOSE_PROJECT_NAME down` para remover somente os containers e a rede desse projeto; não use `-v`, pois o volume isolado deve ser preservado. Depois que a carga terminar e os agregados forem guardados sem segredo, remova somente o CSV e o arquivo Compose temporários criados por esta execução com `Remove-Item -LiteralPath $loadCsv, $composeOverride`. A aplicação, a carga e os dados de outros projetos não são encerrados nem alterados por esses comandos.
+Ao terminar, pare somente o Spring Boot com `Ctrl+C` no Terminal 1. Preserve ou remova manualmente o banco dedicado após confirmar que `or_commit15_load` não contém dados que devam ser mantidos. Depois de guardar agregados sem segredo, remova somente o CSV temporário criado para esta execução com `Remove-Item -LiteralPath $loadCsv`. Não encerre o serviço PostgreSQL local nem altere outros bancos.
 
 ## Análise dos resultados
 

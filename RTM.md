@@ -10,7 +10,7 @@ Legenda de status: ⬜ Pendente · 🟨 Em andamento · ✅ Verificado
 |---|---|---|---|---|---|
 | RF-01 Autenticação/autorização por perfil | Acesso indevido a ações de outro perfil | Acesso negado por perfil em cada endpoint protegido | API caixa-preta, integração | — | ⬜ |
 | RF-05 / RN-02 Sobreposição (sala, material, professor) | Reserva sobreposta aceita | Casos parametrizados de limites de horário (antes, depois, contido, borda); sobreposição na agenda do professor | Unitário parametrizado, integração | — | ⬜ |
-| RF-06 / RN-03 Dupla reserva simultânea | Duas reservas aceitas para o mesmo recurso | N threads reservando o mesmo recurso e horário; exatamente 1 aceita | Concorrência com Testcontainers; carga JMeter | — | ⬜ |
+| RF-06 / RN-03 Dupla reserva simultânea | Duas reservas aceitas para o mesmo recurso | N threads reservando o mesmo recurso e horário; exatamente 1 aceita | Concorrência com PostgreSQL 16 nativo no CI; carga JMeter | — | ⬜ |
 | RF-07 / RN-06 Aprovação de recurso restrito | Aprovação por perfil não autorizado | SOL tenta aprovar → negado; RESP aprova → sucesso | TDD/BDD, API | — | ⬜ |
 | RF-08 / RN-04 Bloqueio por manutenção | Recurso em manutenção reservado | Reserva dentro de período bloqueado é recusada; fora do período é aceita | Unitário, integração, TDD/BDD | — | ⬜ |
 | RF-10 / RN-08 Histórico auditável | Mudança de estado sem registro ou exposição de credenciais | Persistência, consulta administrativa paginada e bloqueio de senha/token | Integração | `IdentityAuditIntegrationTest` | ✅ |
@@ -35,7 +35,7 @@ Legenda de status: ⬜ Pendente · 🟨 Em andamento · ✅ Verificado
 | RNF-03 Pipeline | Regressão chega ao branch principal | GitHub Actions em cada pull request | CI | — | ⬜ |
 | RNF-04 Carga | Degradação sob concorrência | Plano JMeter com reservas simultâneas do mesmo recurso | Carga | — | ⬜ |
 | RNF-05 Segurança | Entrada maliciosa; vazamento por mensagem de erro | Validação de entrada; erros sem detalhes internos | API, integração | — | ⬜ |
-| RNF-06 Ambiente realista | Mock mascara falha de persistência | Testcontainers e WireMock nos testes de integração | Integração | — | ⬜ |
+| RNF-06 Ambiente realista e isolamento | Mock mascara falha de persistência; testes podem alcançar banco remoto ou compartilhar estado | Suíte completa em PostgreSQL 16 nativo no CI, com schema exclusivo por classe, verificação de loopback e rejeição de datasource remoto; WireMock para integração externa. Probe opcional de Supabase em job manual isolado: somente `SELECT 1` em transação read-only | Integração, CI e segurança | — | ⬜ |
 | RNF-07 TDD/BDD | Sem evidência da técnica | Histórico de commits teste-primeiro de ao menos uma funcionalidade | Processo | — | ⬜ |
 | RNF-09 Aplicação executável | Entrega que não executa | Build e execução a partir das instruções do README | CI, manual | — | ⬜ |
 

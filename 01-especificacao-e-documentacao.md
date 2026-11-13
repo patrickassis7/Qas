@@ -95,7 +95,7 @@ Qualquer outra transição → 409. Estados finais: REJEITADA, CANCELADA, NAO_CO
 - `withdrawal_records(id, reservation_id, resource_id, picked_up_at, returned_at, handled_by, notes)` (RF-09).
 - `audit_events(id, actor_id, action, entity_type, entity_id, occurred_at, details)`, append-only. Também registra `CONFLITO_EVITADO` quando uma reserva é recusada por conflito (alimenta o relatório de "conflitos evitados").
 
-Flyway para todas as migrations. Concorrência provada em **PostgreSQL real via Testcontainers** (H2 não serve para isso).
+Flyway para todas as migrations. Concorrência provada em **PostgreSQL 16 real, instalado nativamente no runner CI**, com schema isolado por classe (H2 não serve para isso). A suíte usa apenas a instância local do runner e rejeita datasource remoto.
 
 ## 6. API REST (`/api/v1`)
 
@@ -132,7 +132,7 @@ docs/{adr,quality,diagrams}/   RTM em docs/RTM.md
 | Item (imagem) | O que fazer |
 |---|---|
 | Testes automatizados | JUnit 5 com **testes parametrizados** (intervalos, transições); integração; **API caixa-preta**; **end-to-end** (fluxo completo login → reservar → aprovar → usar → devolver) |
-| Ambiente realista | Testcontainers (PostgreSQL) e WireMock (notificação externa) |
+| Ambiente realista | PostgreSQL 16 nativo no CI, com isolamento por schema/classe, e WireMock (notificação externa) |
 | Concorrência | Teste automatizado com várias threads no mesmo recurso/horário: exatamente 1 aceita |
 | TDD ou BDD | Ao menos uma funcionalidade (sugerido: regra de sobreposição e regras de aprovação/bloqueio), com evidência: commits "teste falhando" → "implementação" no PR, ou cenários Given/When/Then |
 | CI e análise estática | GitHub Actions em PRs, JaCoCo, projeto integrado ao SonarCloud |
@@ -202,7 +202,7 @@ A versão anterior trazia um cronograma que não correspondia ao da imagem (por 
 | 36 | Gestão de erros e bugs | Registro e triagem dos primeiros defeitos |
 | 37 | Testes automatizados em CI | Casca Maven com teste mínimo e GitHub Actions a cada PR |
 | 38 | Unidade com JUnit 5 + JaCoCo + SonarCloud | Cobertura de ramo nas regras de sobreposição |
-| 39 | WireMock/Testcontainers | Banco em container e integração externa isolada |
+| 39 | WireMock e integração com PostgreSQL real | Persistência em banco local do runner e integração externa isolada |
 | 40 | **Prova escrita** | — |
 | 41 | TDD e BDD | Regras de aprovação e bloqueio guiadas por teste |
 | 42 | Carga com JMeter | Reservas simultâneas do mesmo recurso sob carga |

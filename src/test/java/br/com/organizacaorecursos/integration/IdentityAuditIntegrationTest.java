@@ -13,6 +13,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class IdentityAuditIntegrationTest extends PostgresIntegrationTestSupport {
+
+    @DynamicPropertySource
+    static void postgresProperties(DynamicPropertyRegistry registry) {
+        registerPostgresProperties(registry, IdentityAuditIntegrationTest.class);
+    }
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -162,7 +169,7 @@ class IdentityAuditIntegrationTest extends PostgresIntegrationTestSupport {
     private boolean tableExists(String tableName) {
         return Boolean.TRUE.equals(jdbcTemplate.queryForObject(
                 "SELECT EXISTS (SELECT 1 FROM information_schema.tables "
-                        + "WHERE table_schema = 'public' AND table_name = ?)",
+                        + "WHERE table_schema = current_schema() AND table_name = ?)",
                 Boolean.class,
                 tableName
         ));

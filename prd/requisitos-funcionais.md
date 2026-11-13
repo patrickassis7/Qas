@@ -44,7 +44,7 @@ Perfis: **SOL** = Solicitante · **RESP** = Responsável · **ADM** = Administra
 | RNF-03 | Integração contínua (GitHub Actions) em pull requests. | Pipeline ativo e verde |
 | RNF-04 | Teste de carga (JMeter), incluindo reservas simultâneas do mesmo recurso. | Plano e resultado documentados |
 | RNF-05 | Segurança: autorização, validação de entrada e tratamento seguro de erros. | Sem falha de autorização |
-| RNF-06 | Ambiente realista: Testcontainers (banco) e WireMock (integrações externas). | Persistência e integrações críticas sem mock |
+| RNF-06 | Ambiente realista: PostgreSQL 16 nativo e local no CI, com isolamento por schema/classe, e WireMock para integrações externas. | Persistência e integrações críticas sem mock; a suíte não pode conectar a bancos remotos. A verificação de conectividade Supabase, se configurada, ocorre somente em job manual separado, com `SELECT 1` em transação read-only. |
 | RNF-07 | Ao menos uma funcionalidade desenvolvida com TDD ou BDD, com evidência. | Evidência registrada |
 | RNF-08 | Rastreabilidade: RTM ligando requisito, risco, teste e evidência. | 100% dos requisitos críticos |
 | RNF-09 | Aplicação executável com instruções de instalação. | Limitador de nota |
