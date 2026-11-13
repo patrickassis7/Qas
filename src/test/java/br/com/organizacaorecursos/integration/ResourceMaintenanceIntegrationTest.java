@@ -15,6 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -34,6 +36,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class ResourceMaintenanceIntegrationTest extends PostgresIntegrationTestSupport {
+
+    @DynamicPropertySource
+    static void postgresProperties(DynamicPropertyRegistry registry) {
+        registerPostgresProperties(registry, ResourceMaintenanceIntegrationTest.class);
+    }
 
     private static final String PASSWORD = "synthetic-password-only-for-tests";
     private static final Instant BASE = Instant.parse("2030-03-04T00:00:00Z");

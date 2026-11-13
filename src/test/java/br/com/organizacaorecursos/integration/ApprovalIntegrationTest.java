@@ -65,6 +65,7 @@ class ApprovalIntegrationTest extends PostgresIntegrationTestSupport {
 
     @DynamicPropertySource
     static void notificationProperties(DynamicPropertyRegistry registry) {
+        registerPostgresProperties(registry, ApprovalIntegrationTest.class);
         registry.add("app.notification.base-url", NOTIFICATIONS::baseUrl);
         registry.add("app.notification.connect-timeout-ms", () -> 500L);
         registry.add("app.notification.read-timeout-ms", () -> 100L);

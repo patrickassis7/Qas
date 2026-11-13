@@ -71,13 +71,13 @@ Estados alternativos: `REJEITADA`, `CANCELADA` e `NÃO_COMPARECEU`.
 | Frente | O que é exigido |
 |---|---|
 | Testes automatizados | Unitários com JUnit 5, parametrizados, integração, API em caixa-preta e end-to-end. |
-| Ambiente realista | Banco containerizado com Testcontainers e WireMock para integrações externas. |
+| Ambiente realista | PostgreSQL 16 nativo no CI, com schema de teste isolado por classe, e WireMock para integrações externas. |
 | Concorrência | Teste automatizado comprovando a proteção contra dupla reserva. |
 | TDD ou BDD | Ao menos uma funcionalidade nova desenvolvida com evidências da técnica. |
 | CI e análise estática | GitHub Actions em pull requests, cobertura por JaCoCo e projeto integrado ao SonarCloud. |
 | Não funcionais | JMeter, autorização, validação de entrada e tratamento seguro de erros. |
 
-**Uso de mocks:** permitido em testes unitários isolados. Persistência e integrações críticas devem ser verificadas com ambiente real, Testcontainers ou WireMock.
+**Uso de mocks:** permitido em testes unitários isolados. Persistência e integrações críticas devem ser verificadas com PostgreSQL real local e WireMock; a suíte não usa bancos remotos.
 
 ## Metas mensuráveis
 
@@ -139,7 +139,7 @@ A técnica é demonstrada em aula no Foot Fanatics e aplicada, na mesma semana, 
 | 36 | Gestão de erros e bugs | Registro e triagem dos primeiros defeitos, com a arquitetura construída por prompts |
 | 37 | Testes automatizados em CI | Casca Maven com teste mínimo e pipeline no GitHub Actions a cada pull request |
 | 38 | Testes de unidade com JUnit 5 + JaCoCo + SonarCloud | Cobertura de ramo nas regras de sobreposição de horário |
-| 39 | WireMock/Testcontainers e chamadas de API seguras | Banco em container e integração externa isolada em teste |
+| 39 | PostgreSQL real, WireMock e chamadas de API seguras | Banco local no CI e integração externa isolada em teste |
 | 40 | Prova escrita | — |
 | 41 | TDD e BDD | Regras de aprovação e bloqueio guiadas por teste |
 | 42 | Testes de carga com JMeter | Reservas simultâneas do mesmo recurso sob carga |
@@ -156,23 +156,34 @@ A técnica é demonstrada em aula no Foot Fanatics e aplicada, na mesma semana, 
 - Java 21
 - Spring Boot 3.x
 - Maven
-- JUnit 5, JaCoCo, Testcontainers, WireMock, JMeter
+- JUnit 5, JaCoCo, PostgreSQL 16, WireMock, JMeter
 - GitHub Actions e SonarCloud
 
 ## Como executar
 
-### Commits 01–03 — execução local, persistência e login
+### Executar os testes
 
-Pré-requisitos: JDK 21 e acesso a um banco PostgreSQL. O Maven global não é necessário, pois o projeto possui Maven Wrapper.
+Os testes de integração precisam de PostgreSQL 16 local em loopback e de um banco de teste dedicado `organizacao_recursos_test`. Crie o banco e o usuário local `qas_test` com permissão para criar schemas usando uma ferramenta administrativa PostgreSQL. Os testes isolam cada classe em schema próprio e recusam conexões a endereços remotos; não use `SUPABASE_DB_URL` para a suíte. O Maven global não é necessário, pois o projeto possui Maven Wrapper.
 
 No Windows PowerShell:
 
 ```powershell
 java -version
-.\mvnw.cmd clean verify
-Copy-Item .env.example .env
-# Preencha o .env com valores locais; ele é usado pelo Docker Compose.
-docker compose up -d postgres
+$env:TEST_DB_URL = "jdbc:postgresql://127.0.0.1:5432/organizacao_recursos_test"
+$env:TEST_DB_USERNAME = "qas_test"
+$testPasswordSecure = Read-Host "Senha do banco local de testes" -AsSecureString
+$env:TEST_DB_PASSWORD = [System.Net.NetworkCredential]::new("", $testPasswordSecure).Password
+.\mvnw.cmd --batch-mode --no-transfer-progress clean verify
+Remove-Item Env:TEST_DB_URL, Env:TEST_DB_USERNAME, Env:TEST_DB_PASSWORD
+```
+
+### Commits 01–03 — execução local, persistência e login
+
+Pré-requisitos: JDK 21 e PostgreSQL 16 instalado localmente, aceitando conexões em loopback. Crie previamente o banco `organizacao_recursos` e um usuário local com permissões para migrations.
+
+No Windows PowerShell:
+
+```powershell
 $env:SPRING_PROFILES_ACTIVE="local"
 $env:DB_URL="jdbc:postgresql://localhost:5432/organizacao_recursos"
 $env:DB_USERNAME="<usuario-local>"
@@ -196,7 +207,7 @@ Com a aplicação em execução:
 - OpenAPI: `http://localhost:8080/v3/api-docs`
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
-O Commit 02 ativa PostgreSQL, Flyway V1, identidade e auditoria base. Usuários fictícios são semeados apenas no perfil `local`; o perfil `test` usa PostgreSQL isolado via Testcontainers. Não há autenticação JWT no Commit 02.
+O Commit 02 ativa PostgreSQL, Flyway V1, identidade e auditoria base. Usuários fictícios são semeados apenas no perfil `local`. O perfil `test` usa exclusivamente PostgreSQL local em loopback, com schema isolado por classe e rejeição de datasource remoto; não lê `SUPABASE_DB_URL`. Não há autenticação JWT no Commit 02.
 
 No Commit 03, o login aceita e-mail e senha e emite JWT com validade limitada. Exemplo em outra sessão PowerShell, com a senha local definida nela:
 
@@ -226,7 +237,11 @@ Para encerrar a aplicação, pressione `Ctrl+C` no terminal da execução. O CSS
 
 ## CI e qualidade (Commit 04)
 
-O workflow `.github/workflows/ci.yml` executa em Pull Requests direcionados a `main` ou `develop`, usando Java 21 Temurin, cache Maven e `./mvnw clean verify`. Os testes de integração iniciam PostgreSQL real via Testcontainers; o runner hospedado do GitHub fornece Docker. O wrapper recebe permissão de execução no runner antes do uso.
+`.github/workflows/ci.yml` executa `./mvnw --batch-mode --no-transfer-progress clean verify` em Pull Requests para `main` e `develop` e em disparos manuais, usando Java 21 Temurin e PostgreSQL 16 instalado nativamente no runner Ubuntu 24.04. Cada classe de integração usa schema exclusivo, verificado por `current_schema()` e por teste de isolamento entre classes. A suíte aceita apenas datasource local em `127.0.0.1`/`::1`, falha fechada para endereços remotos e nunca recebe `SUPABASE_DB_URL`.
+
+Somente em `workflow_dispatch`, o job independente `supabase-connection` valida o secret `SUPABASE_DB_URL` com `BEGIN TRANSACTION READ ONLY; SELECT 1; ROLLBACK;`. Ele não inicia a aplicação, Spring, Flyway, migrations, seeds ou testes e não executa escrita. Se o secret estiver ausente, falha apenas esse job sem revelar valores sensíveis. Supabase não é destino permitido para a suíte.
+
+O backend executa localmente ou durante CI/testes; este workflow não faz deploy nem hospedagem persistente.
 
 O JaCoCo gera relatórios HTML e XML em `target/site/jacoco/` durante `verify`. O XML é usado pelo SonarScanner for Maven quando a integração estiver configurada. As metas de 80% de linhas e 70% de branches são acompanhadas como referência e não bloqueiam o build até o gate previsto para o Commit 14.
 

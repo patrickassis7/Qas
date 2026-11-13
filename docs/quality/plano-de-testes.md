@@ -9,15 +9,18 @@ Demonstrar por evidência reproduzível os requisitos RF-01 a RF-14 e as regras 
 | Camada | Escopo | Ambiente/evidência |
 |---|---|---|
 | Unitário parametrizado | Limites de intervalo, transições, validação de recursos e configurações de autenticação | JUnit 5; `src/test/java/br/com/organizacaorecursos/reservation/`, `resource/` e `auth/` |
-| Integração | Persistência, auditoria, concorrência, manutenção, aprovação, retirada/devolução e relatório | PostgreSQL real via Testcontainers; migrations Flyway; `src/test/java/br/com/organizacaorecursos/integration/` |
+| Integração | Persistência, auditoria, concorrência, manutenção, aprovação, retirada/devolução e relatório | PostgreSQL 16 instalado nativamente no runner CI; migrations Flyway; `src/test/java/br/com/organizacaorecursos/integration/` |
 | Integração externa | Envio de aprovação/rejeição/cancelamento e resposta HTTP/timeout | WireMock; `ApprovalIntegrationTest` |
 | API caixa-preta | Rotas HTTP, status, payload, autenticação/autorização, filtros e erros | MockMvc nos testes de integração; dados sintéticos e banco isolado por classe |
-| Ponta a ponta | Login → pesquisar → reservar recurso restrito → aprovar → retirar/iniciar → devolver/concluir → consultar auditoria | `PublicApiWorkflowEndToEndTest`, `TestRestTemplate`, servidor HTTP aleatório e PostgreSQL Testcontainers |
+| Ponta a ponta | Login → pesquisar → reservar recurso restrito → aprovar → retirar/iniciar → devolver/concluir → consultar auditoria | `PublicApiWorkflowEndToEndTest`, `TestRestTemplate`, servidor HTTP aleatório e PostgreSQL local nativo no CI |
 | Interface visual | Responsividade e inspeção visual de mensagens | Validação manual reportada pelo usuário em Chrome DevTools: login, navegação, recursos, reservas, formulários e mensagens de erro; overflow retornou `true` em 320, 375, 390, 768, 1024 e 1440 px. Sem capturas preservadas; consultar [story 1.6](../stories/1.6-commit-16-frontend-rf13.md). |
 
 ## Dados e isolamento
 
-- Cada classe de integração usa PostgreSQL isolado por Testcontainers, migrações Flyway e limpeza do contexto após execução quando necessário.
+- Cada classe de integração usa um schema PostgreSQL exclusivo no servidor local do job; Flyway migra esse schema. O teste comprova `current_schema()`, ausência de visibilidade de dados sentinela entre duas classes e limpeza/recriação do schema por classe.
+- Dentro de uma classe, os casos não dependem da ordem nem de dados compartilhados: cada método cria/limpa seus dados de forma determinística. A suíte completa deve passar em duas execuções consecutivas.
+- O datasource do perfil de teste é explícito e aceita somente PostgreSQL em loopback. Validação fail-closed rejeita URL ausente/malformada, hostname/IP remoto, Supabase e configuração externa via propriedades/variáveis; `SUPABASE_DB_URL` nunca é consumida pela suíte ou pelo job `verify`.
+- O PostgreSQL de integração é local ao runner. Um probe de conectividade Supabase, se habilitado, ocorre em job independente de `workflow_dispatch`, não executa Spring/Flyway/testes e executa exclusivamente `BEGIN TRANSACTION READ ONLY; SELECT 1; ROLLBACK;`. O probe não é evidência de destino válido para testes.
 - Identidades, reservas e recursos são sintéticos; senhas usadas nos testes não são credenciais de produção.
 - WireMock deve ser reiniciado entre cenários; respostas 500 e timeout devem preservar a transição da reserva.
 - Horários de reserva são instantes ISO-8601/UTC. Intervalos seguem `[início, fim)`.
@@ -43,6 +46,12 @@ Resultado observado: 93,52% de linhas (1053/1126) e 77,27% de branches (204/264)
 O primeiro comando falhou por linhas (93,52% < 94%); o segundo falhou por branches (77,27% < 78%). Ambos retornaram `BUILD FAILURE` por `Coverage checks have not been met`.
 
 SonarCloud só pode ser considerado executado quando `SONAR_TOKEN`, `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY` estiverem configurados e uma análise efetiva produzir evidência. A configuração ausente mantém o item pendente.
+
+## Conectividade Supabase (fora da suíte)
+
+- O job remoto só pode ser elegível em `workflow_dispatch`; não é dependência do job `verify` nem recebe o secret em Pull Requests.
+- `SUPABASE_DB_URL` ausente causa falha explícita e segura no próprio job. Se presente, o cliente recebe parâmetros por ambiente sem imprimir o URL, incluí-lo em argumentos de processo ou gravá-lo em arquivo.
+- A única instrução SQL permitida é `BEGIN TRANSACTION READ ONLY; SELECT 1; ROLLBACK;`. Nenhum teste, inicialização Spring, Flyway, migration, seed ou operação de escrita pode ser executada contra Supabase.
 
 ## Critérios de aceite e evidências
 

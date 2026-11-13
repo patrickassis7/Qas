@@ -1,36 +1,26 @@
 package br.com.organizacaorecursos.integration;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
-// Container recriado por classe: o contexto em cache apontaria para uma porta já encerrada.
+/**
+ * Shared lifecycle for integration classes backed by a caller-provided local PostgreSQL.
+ * Each concrete class must register properties with its own {@code @DynamicPropertySource}
+ * method so Spring prepares the schema before constructing the datasource.
+ */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public abstract class PostgresIntegrationTestSupport {
 
-    @Container
-    protected static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine")
-            .withDatabaseName("organizacao_recursos_test")
-            .withUsername("test_user")
-            .withPassword("test_password");
+    @RegisterExtension
+    protected static final AfterAllCallback SCHEMA_CLEANUP =
+            context -> PostgresTestDatabaseConfiguration.clean(context.getRequiredTestClass());
 
-    @BeforeAll
-    static void requireContainer() {
-        if (!POSTGRES.isRunning()) {
-            throw new IllegalStateException("PostgreSQL Testcontainer não iniciou");
-        }
-    }
-
-    @DynamicPropertySource
-    static void registerPostgresProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
-        registry.add("spring.flyway.enabled", () -> true);
+    protected static void registerPostgresProperties(
+            DynamicPropertyRegistry registry,
+            Class<?> integrationTestClass) {
+        PostgresTestDatabaseConfiguration.register(registry, integrationTestClass);
     }
 }

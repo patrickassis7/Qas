@@ -20,6 +20,7 @@ class LocalSeedPasswordIntegrationTest extends PostgresIntegrationTestSupport {
 
     @DynamicPropertySource
     static void localPassword(DynamicPropertyRegistry registry) {
+        registerPostgresProperties(registry, LocalSeedPasswordIntegrationTest.class);
         registry.add("LOCAL_SEED_PASSWORD", () -> PASSWORD);
     }
 
