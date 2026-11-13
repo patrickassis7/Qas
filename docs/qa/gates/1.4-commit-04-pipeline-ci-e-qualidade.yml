@@ -1,0 +1,26 @@
+schema: 1
+story: '1.4'
+story_title: 'Commit 04 - Pipeline CI e qualidade'
+gate: PASS
+status_reason: 'A inspeção estática confirma o workflow de PR com Java 21, permissões mínimas, PostgreSQL, Maven Wrapper e JaCoCo; a verificação local completa passou com 220 testes e cobertura acima dos limites. Nenhum critério atual da story exige uma nova execução remota para este gate.'
+reviewer: 'Quinn (Test Architect)'
+reviewed_revision: 'commit:cc11ccf'
+updated: '2026-11-13T19:24:54Z'
+top_issues: []
+waiver: { active: false }
+evidence:
+  tests_reviewed: 220
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8]
+    ac_gaps: []
+  checks:
+    workflow_static_review: 'PASS — pull_request main/develop, contents: read, actions fixadas por SHA, Java 21 Temurin e execução do wrapper'
+    postgres_testcontainers: 'PASS — suíte completa em PostgreSQL 16.15 isolado; 220 testes, 0 falhas/erros/skips'
+    jacoco: 'PASS — XML/HTML configurados; 93.64% linhas e 78.57% branches, acima dos limites de 80%/70%'
+    sonar: 'Passo configurado com condição e propriedades documentadas; nenhuma análise Sonar foi iniciada nesta revisão.'
+    wiremock: 'WireMock 3.13.2 em escopo test'
+  review_limits:
+    - 'Não foi iniciado novo workflow GitHub nesta revisão; a configuração foi inspecionada estaticamente.'
+    - 'A execução local fresca usou OpenJDK 25.0.5 com compilação Maven --release 21; o workflow configura Java 21.'
+    - 'CodeRabbit não executado conforme política; nenhum código foi enviado a serviço externo.'
