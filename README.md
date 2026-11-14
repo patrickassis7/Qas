@@ -237,7 +237,7 @@ Para encerrar a aplicação, pressione `Ctrl+C` no terminal da execução. O CSS
 
 ## CI e qualidade (Commit 04)
 
-`.github/workflows/ci.yml` executa `./mvnw --batch-mode --no-transfer-progress clean verify` em Pull Requests para `main` e `develop` e em disparos manuais, usando Java 21 Temurin e PostgreSQL 16 instalado nativamente no runner Ubuntu 24.04. Cada classe de integração usa schema exclusivo, verificado por `current_schema()` e por teste de isolamento entre classes. A suíte aceita apenas datasource local em `127.0.0.1`/`::1`, falha fechada para endereços remotos e nunca recebe `SUPABASE_DB_URL`.
+`.github/workflows/ci.yml` executa `./mvnw --batch-mode --no-transfer-progress clean verify` em Pull Requests para `main` e `develop`, em disparos manuais e em push da tag exata `v1.0.0-rc1`, usando Java 21 Temurin e PostgreSQL 16 instalado nativamente no runner Ubuntu 24.04. Cada classe de integração usa schema exclusivo, verificado por `current_schema()` e por teste de isolamento entre classes. A suíte aceita apenas datasource local em `127.0.0.1`/`::1`, falha fechada para endereços remotos e nunca recebe `SUPABASE_DB_URL`.
 
 Somente em `workflow_dispatch`, o job independente `supabase-connection` valida o secret `SUPABASE_DB_URL` com `BEGIN TRANSACTION READ ONLY; SELECT 1; ROLLBACK;`. Ele não inicia a aplicação, Spring, Flyway, migrations, seeds ou testes e não executa escrita. Se o secret estiver ausente, falha apenas esse job sem revelar valores sensíveis. Supabase não é destino permitido para a suíte.
 
@@ -247,6 +247,27 @@ O JaCoCo gera relatórios HTML e XML em `target/site/jacoco/` durante `verify`. 
 
 Para habilitar a análise SonarCloud, um administrador do repositório deve configurar o secret `SONAR_TOKEN` e as variáveis `SONAR_ORGANIZATION` e `SONAR_PROJECT_KEY` com os identificadores confirmados no SonarCloud. O workflow omite a análise quando qualquer item estiver ausente e não expõe o token a PRs de forks. Quando a análise é iniciada, erros do scanner causam falha no step. A integração ainda depende de configuração e execução remotas; sua operacionalidade não é presumida.
 
+## Erros e limitações observados para ciência do professor
+
+**Atualizado em 14/11/2026.** O anexo “Pasted text #1” mencionado na solicitação não ficou disponível neste ambiente. Para não atribuir erros não verificados ao anexo, esta seção registra somente ocorrências observadas durante a validação do projeto.
+
+| Verificação | Resultado | Detalhes |
+|---|---|---|
+| `npm run lint`, `npm run typecheck`, `npm test` e `npm run build` | Bloqueados | Os quatro comandos retornaram erro `ENOENT` porque não há `package.json` na raiz. O projeto é Java/Maven; por isso, esses comandos npm não representam sua compilação e testes. A incompatibilidade com o gate AIOX permanece pendente de adequação aprovada. |
+| Inicialização do PostgreSQL temporário para testes locais | Corrigida no reteste | A primeira inicialização do PostgreSQL 16 falhou ao criar um arquivo de socket em `/var/run/postgresql` por falta de permissão. Ao configurar o socket em um diretório temporário gravável, o banco iniciou e a suíte pôde ser executada. Foi um problema de configuração do ambiente temporário, não uma falha da aplicação. |
+| `./mvnw --batch-mode --no-transfer-progress clean verify` | Aprovado localmente | Execução concluída com 220 testes, 0 falhas, 0 erros e 0 testes ignorados. Cobertura JaCoCo: 93,64% de linhas e 78,57% de branches, acima das metas de 80% e 70%. |
+| CodeRabbit e publicação em `main` | Pendentes | Não há relatório CodeRabbit válido para esta revisão nem execução remota verde da tag. A entrega não foi publicada em `main`; o gate AIOX ainda precisa ser resolvido e validado. |
+
+## Entrega do release candidate `v1.0.0-rc1`
+
+Depois de clonar o repositório, use estes documentos para conferir o pacote:
+
+- [Checklist de entrega](docs/entrega/checklist.md): entregáveis, estado e evidência correspondente.
+- [Índice de evidências](docs/evidencias/README.md): como localizar as evidências e conferir a execução do CI.
+- [Decisão de qualidade](docs/decisao-qualidade.md): critérios, pendências e decisão do release candidate.
+
+A [página de execuções do workflow CI](https://github.com/patrickassis7/Qas/actions/workflows/ci.yml) permite localizar a execução disparada pela tag `v1.0.0-rc1`. Confira a ref e o SHA da tag e aguarde a execução terminar com sucesso; a evidência deve ser registrada no índice. A configuração do gatilho, isoladamente, não comprova uma execução verde.
+
 ## Documentação
 
 | Documento | Conteúdo |
@@ -255,9 +276,15 @@ Para habilitar a análise SonarCloud, um administrador do repositório deve conf
 | [`prd/personas/`](prd/personas) | Personas: Solicitante, Responsável e Administrador |
 | [`prd/requisitos-funcionais.md`](prd/requisitos-funcionais.md) | Requisitos funcionais, regras de negócio e requisitos não funcionais |
 | [`RTM.md`](RTM.md) | Rastreabilidade requisito ↔ risco ↔ teste ↔ evidência |
+| [`docs/entrega/checklist.md`](docs/entrega/checklist.md) | Checklist verificável dos entregáveis do release candidate |
+| [`docs/evidencias/README.md`](docs/evidencias/README.md) | Índice e instruções para auditar as evidências |
+| [`docs/decisao-qualidade.md`](docs/decisao-qualidade.md) | Registro dos critérios e da decisão de qualidade |
 
 ## Equipe
 
-| Nome | Papel |
+| Informação | Valor |
 |---|---|
-| *(preencher)* | *(preencher)* |
+| Projeto | Organização de Recursos |
+| Nome associado ao autor dos commits Git | Arthur Vieira |
+| Papel acadêmico e demais integrantes | Não informados no repositório; confirmar antes da entrega final |
+| Professor, disciplina e turma | Não informados no repositório |
